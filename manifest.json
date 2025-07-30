@@ -2,7 +2,7 @@
   "name": "Busfahren - Trinkspiel",
   "short_name": "Busfahren",
   "description": "Das beliebte deutsche Trinkspiel direkt im Browser spielen",
-  "start_url": "/",
+  "start_url": "/busfahren-spiel/",
   "display": "standalone",
   "background_color": "#1e3c72",
   "theme_color": "#2a5298",
