@@ -722,10 +722,11 @@
         let pyramidRevealed = 0;
         let currentPyramidRow = 1;
         let placedCards = {};
-        let cardsPlacedThisTurn = 0; // Zähler für abgelegte Karten in dieser Runde
+        let playerCardsPlaced = {}; // Zähler für abgelegte Karten pro Spieler in dieser Runde
         let currentRevealedCard = null;
         let playersHandCards = {};
         let playerDrinks = {}; // Schluck-Tracker pro Spieler
+        let finishOrder = []; // Reihenfolge wer 0 Karten erreicht hat
         let busDriverIndex = 0;
         let busCards = [];
         let busPiles = [];
@@ -838,7 +839,8 @@
             pyramidRevealed = 0;
             currentPyramidRow = 1;
             placedCards = {};
-            cardsPlacedThisTurn = 0; // Zähler zurücksetzen
+            playerCardsPlaced = {}; // Zähler zurücksetzen
+            finishOrder = []; // Finish-Tracking zurücksetzen
             playersHandCards = {};
             
             setupPyramid();
@@ -896,13 +898,34 @@
         }
 
         function showPlayerTransition() {
-            const currentPlayer = players[currentPlayerIndex];
-            document.getElementById('transition-player-name').textContent = currentPlayer;
+            // Finde den nächsten Spieler mit Karten
+            let foundPlayerWithCards = false;
+            let attempts = 0;
             
-            // Schluck-Tracker aktualisieren
-            updateDrinkTracker(currentPlayer, 'transition');
+            while (!foundPlayerWithCards && attempts < players.length) {
+                const currentPlayer = players[currentPlayerIndex];
+                const playerCards = playersHandCards[currentPlayer] || [];
+                const cardCount = playerCards.filter(card => card !== null).length;
+                
+                if (cardCount > 0) {
+                    // Spieler hat Karten - zeige Transition
+                    document.getElementById('transition-player-name').textContent = currentPlayer;
+                    updateDrinkTracker(currentPlayer, 'transition');
+                    document.getElementById('player-transition').style.display = 'flex';
+                    foundPlayerWithCards = true;
+                } else {
+                    // Spieler hat keine Karten - überspringe zum nächsten
+                    console.log(`${currentPlayer} hat 0 Karten - wird in Transition übersprungen`);
+                    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                    attempts++;
+                }
+            }
             
-            document.getElementById('player-transition').style.display = 'flex';
+            if (!foundPlayerWithCards) {
+                // Alle Spieler haben 0 Karten - springe zur nächsten Pyramidenkarte
+                console.log('Alle Spieler haben 0 Karten - nächste Pyramidenkarte wird aufgedeckt');
+                nextPlayerOrContinue();
+            }
         }
 
         function continueToPlayerTurn() {
@@ -932,6 +955,7 @@
                 currentRevealedCard = pyramidCards[pyramidRevealed];
             }
             
+            
             // Prüfen ob dieser Spieler passende Karten hat
             checkForMatchingCards();
         }
@@ -946,16 +970,24 @@
                     cardDiv.className = `card ${card.isRed ? 'red' : 'black'}`;
                     cardDiv.textContent = `${card.value}${card.suit}`;
                     cardDiv.onclick = () => playHandCard(index);
+                    // Wichtig: Den ursprünglichen Index als Data-Attribut speichern
+                    cardDiv.dataset.originalIndex = index;
                     handContainer.appendChild(cardDiv);
                 }
             });
             
-            // Nach dem Erstellen der Karten die Hervorhebung anwenden falls nötig
-            highlightMatchingCards();
+            // Hervorhebung wird von showCardPlacement() gehandhabt
         }
         
         function highlightMatchingCards() {
-            if (!currentRevealedCard || document.getElementById('card-placement-area').style.display !== 'block') {
+            if (!currentRevealedCard) {
+                return;
+            }
+            
+            // Nur hervorheben wenn wir im Platzierungsmodus sind
+            const placementArea = document.getElementById('card-placement-area');
+            const noCardsArea = document.getElementById('no-cards-area');
+            if (placementArea.style.display !== 'block' && noCardsArea.style.display !== 'block') {
                 return;
             }
             
@@ -1035,11 +1067,16 @@
             const cardElements = handContainer.children;
             
             for (let i = 0; i < cardElements.length; i++) {
-                const handCard = handCards[i];
+                const cardElement = cardElements[i];
+                const originalIndex = parseInt(cardElement.dataset.originalIndex);
+                const handCard = handCards[originalIndex];
+                console.log(`Checking UI card ${i} (original index ${originalIndex}): ${handCard ? handCard.value + handCard.suit : 'null'} against matching cards:`, matchingCards.map(mc => mc.value + mc.suit));
                 if (handCard && matchingCards.some(mc => mc.value === handCard.value)) {
-                    cardElements[i].classList.add('clickable');
+                    console.log(`Making card ${i} (${handCard.value}${handCard.suit}) clickable`);
+                    cardElement.classList.add('clickable');
                 } else {
-                    cardElements[i].classList.remove('clickable');
+                    console.log(`Removing clickable from card ${i}`);
+                    cardElement.classList.remove('clickable');
                 }
             }
             
@@ -1066,13 +1103,13 @@
             const currentPlayer = players[currentPlayerIndex];
             playersHandCards[currentPlayer][cardIndex] = null;
             
-            // UI aktualisieren
-            displayHandCards();
-            
             // Prüfen ob noch weitere passende Karten vorhanden sind
             const remainingMatchingCards = handCards.filter(handCard => 
                 handCard && handCard.value === currentRevealedCard.value
             );
+            
+            // UI aktualisieren
+            displayHandCards();
             
             if (remainingMatchingCards.length > 0) {
                 // Noch passende Karten vorhanden - weiterhin grün anzeigen
@@ -1094,7 +1131,12 @@
             
             pyramidPosition.appendChild(placedCardDiv);
             placedCards[pyramidIndex] = handCard;
-            cardsPlacedThisTurn++; // Zähler erhöhen
+            // Zähler für aktuellen Spieler erhöhen
+            const currentPlayer = players[currentPlayerIndex];
+            if (!playerCardsPlaced[currentPlayer]) {
+                playerCardsPlaced[currentPlayer] = 0;
+            }
+            playerCardsPlaced[currentPlayer]++;
         }
 
         function hideCardPlacement() {
@@ -1112,8 +1154,10 @@
         function skipCardPlacement() {
             hideCardPlacement();
             
-            // Wenn Karten abgelegt wurden, Schluckverteilung anzeigen
-            if (cardsPlacedThisTurn > 0) {
+            // Wenn dieser Spieler Karten abgelegt hat, Schluckverteilung anzeigen
+            const currentPlayer = players[currentPlayerIndex];
+            const playerCards = playerCardsPlaced[currentPlayer] || 0;
+            if (playerCards > 0) {
                 showDrinkDistribution();
             } else {
                 nextPlayerOrContinue();
@@ -1121,7 +1165,7 @@
         }
 
         function showNoMatchingCards() {
-            console.log('showNoMatchingCards wird ausgeführt - Das sollte NICHT passieren wenn Karten gefunden wurden!');
+            console.log('showNoMatchingCards wird ausgeführt');
             
             const noCardsArea = document.getElementById('no-cards-area');
             const revealedCardInfo = document.getElementById('revealed-card-info');
@@ -1129,11 +1173,6 @@
             
             // Sicherstellen dass "card-placement" versteckt ist
             placementArea.style.display = 'none';
-            
-            // Debug: Prüfen welche Karte tatsächlich angezeigt werden soll
-            console.log('showNoMatchingCards - currentRevealedCard:', currentRevealedCard);
-            console.log('showNoMatchingCards - pyramidRevealed index:', pyramidRevealed);
-            console.log('showNoMatchingCards - pyramidCards[pyramidRevealed]:', pyramidCards[pyramidRevealed]);
             
             // Sicherstellen dass die richtige Karte angezeigt wird
             const cardToShow = currentRevealedCard || pyramidCards[pyramidRevealed];
@@ -1146,10 +1185,12 @@
             
             noCardsArea.style.display = 'block';
             
-            console.log('showNoMatchingCards: noCardsArea angezeigt, placementArea versteckt');
+            console.log('showNoMatchingCards: Button angezeigt - Warte auf User-Klick');
         }
 
         function continueWithoutCards() {
+            console.log('User klickt "Weiter" - keine passenden Karten');
+            document.getElementById('no-cards-area').style.display = 'none';
             nextPlayerOrContinue();
         }
 
@@ -1159,16 +1200,23 @@
             if (currentPlayerIndex === 0) {
                 // Alle Spieler hatten ihre Chance - nächste Karte aufdecken
                 pyramidRevealed++;
-                cardsPlacedThisTurn = 0; // Zähler für neue Karte zurücksetzen
+                playerCardsPlaced = {}; // Zähler für neue Karte zurücksetzen
                 
                 if (pyramidRevealed < pyramidCards.length) {
                     // Nächste Karte automatisch aufdecken
                     revealPyramidCard(pyramidRevealed);
                     updatePyramidProgress();
                     
-                    // Wieder beim ersten Spieler anfangen
-                    currentPlayerIndex = 0;
-                    showPlayerTransition();
+                    // Prüfen ob alle Spieler 0 Karten haben - dann skip
+                    if (allPlayersHaveNoCards()) {
+                        console.log('Alle Spieler haben 0 Karten - nächste Karte wird automatisch aufgedeckt');
+                        // Rekursiv zur nächsten Karte springen
+                        nextPlayerOrContinue();
+                    } else {
+                        // Wieder beim ersten Spieler anfangen
+                        currentPlayerIndex = 0;
+                        showPlayerTransition();
+                    }
                 } else {
                     // Pyramide fertig
                     startBusDriverRound();
@@ -1183,7 +1231,10 @@
             const distributionArea = document.getElementById('drink-distribution-area');
             const distributionDiv = document.getElementById('drink-distribution');
             
-            const drinksToDistribute = currentPyramidRow * cardsPlacedThisTurn; // Reihe * Anzahl abgelegter Karten
+            // Nur die Karten des aktuellen Spielers zählen
+            const currentPlayer = players[currentPlayerIndex];
+            const playerCards = playerCardsPlaced[currentPlayer] || 0;
+            const drinksToDistribute = currentPyramidRow * playerCards; // Reihe * Anzahl eigener Karten
             document.getElementById('drinks-to-distribute').textContent = drinksToDistribute;
             
             distributionDiv.innerHTML = '';
@@ -1192,7 +1243,7 @@
                 assignDiv.className = 'drink-assign';
                 assignDiv.innerHTML = `
                     <div>${player}</div>
-                    <input type="number" id="drinks-${player}" min="0" max="${drinksToDistribute}" value="0" onchange="validateDrinkDistribution()">
+                    <input type="number" id="drinks-${player}" min="0" max="${drinksToDistribute}" value="0" onchange="validateDrinkDistribution()" oninput="validateDrinkDistribution()">
                 `;
                 distributionDiv.appendChild(assignDiv);
             });
@@ -1201,7 +1252,10 @@
         }
 
         function validateDrinkDistribution() {
-            const drinksToDistribute = currentPyramidRow * cardsPlacedThisTurn;
+            // Nur die Karten des aktuellen Spielers zählen
+            const currentPlayer = players[currentPlayerIndex];
+            const playerCards = playerCardsPlaced[currentPlayer] || 0;
+            const drinksToDistribute = currentPyramidRow * playerCards;
             let totalAssigned = 0;
             
             players.forEach(player => {
@@ -1210,6 +1264,17 @@
             });
             
             // Automatisch korrigieren wenn zu viel verteilt wird
+            players.forEach(player => {
+                const input = document.getElementById(`drinks-${player}`);
+                const value = parseInt(input.value) || 0;
+                
+                // Einzelwert auf Maximum begrenzen
+                if (value > drinksToDistribute) {
+                    input.value = drinksToDistribute;
+                }
+            });
+            
+            // Gesamtsumme korrigieren
             if (totalAssigned > drinksToDistribute) {
                 const lastChanged = document.activeElement;
                 if (lastChanged && lastChanged.type === 'number') {
@@ -1237,6 +1302,7 @@
             console.log(`${currentPlayer} hat ${totalDistributed} Schlucke verteilt`);
             
             hideDrinkDistribution();
+            checkForFinishedPlayers(); // Prüfen wer 0 Karten erreicht hat
             nextPlayerOrContinue();
         }
 
@@ -1247,6 +1313,28 @@
 
         function hideDrinkDistribution() {
             document.getElementById('drink-distribution-area').style.display = 'none';
+        }
+        
+        function allPlayersHaveNoCards() {
+            return players.every(player => {
+                const playerCards = playersHandCards[player] || [];
+                const cardCount = playerCards.filter(card => card !== null).length;
+                return cardCount === 0;
+            });
+        }
+        
+        function checkForFinishedPlayers() {
+            // Prüfen welche Spieler 0 Karten haben und sie zur finishOrder hinzufügen
+            players.forEach(player => {
+                if (!finishOrder.includes(player)) {
+                    const playerCards = playersHandCards[player] || [];
+                    const cardCount = playerCards.filter(card => card !== null).length;
+                    if (cardCount === 0) {
+                        finishOrder.push(player);
+                        console.log(`${player} hat 0 Karten erreicht. Finish-Reihenfolge:`, finishOrder);
+                    }
+                }
+            });
         }
 
         function updatePyramidProgress() {
@@ -1309,9 +1397,28 @@
                 }
             });
             
-            // Bei Gleichstand: Stechen!
+            // Bei Gleichstand: Prüfen ob Finish-Reihenfolge oder Stechen
             if (busDriverCandidates.length > 1) {
-                return performTieBreaker(busDriverCandidates, maxCards);
+                if (maxCards === 0) {
+                    // Alle haben 0 Karten - prüfen ob gleichzeitig oder nacheinander beendet
+                    const candidateNames = busDriverCandidates.map(i => players[i]);
+                    const finishedCandidates = candidateNames.filter(name => finishOrder.includes(name));
+                    
+                    if (finishedCandidates.length === candidateNames.length) {
+                        // Alle Kandidaten sind in finishOrder - letzter wird Busfahrer
+                        const lastFinishedPlayer = finishedCandidates[finishedCandidates.length - 1];
+                        const lastPlayerIndex = players.indexOf(lastFinishedPlayer);
+                        console.log(`Finish-Reihenfolge:`, finishOrder, `→ ${lastFinishedPlayer} wird Busfahrer`);
+                        return lastPlayerIndex;
+                    } else {
+                        // Einige haben gleichzeitig 0 Karten erreicht - Stechen!
+                        console.log(`Gleichzeitiger Abschluss bei 0 Karten - Stechen!`);
+                        return performTieBreaker(busDriverCandidates, maxCards);
+                    }
+                } else {
+                    // Stechen wenn alle mehr als 0 Karten haben
+                    return performTieBreaker(busDriverCandidates, maxCards);
+                }
             }
             
             const selectedIndex = busDriverCandidates[0];
@@ -1739,6 +1846,7 @@
             handStack = [];
             busDrinks = 0;
             playerDrinks = {}; // Schluck-Tracker zurücksetzen
+            finishOrder = []; // Finish-Tracking zurücksetzen
             
             showSection('setup-section');
             updatePlayerList();
