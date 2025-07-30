@@ -710,8 +710,8 @@
     <script>
         // Kartendeck erstellen und mischen
         const suits = ['♠', '♥', '♦', '♣'];
-        const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A']; // Skatdeck: 32 Karten
-        const cardValues = {'7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14};
+        const values = ['6', '7', '8', '9', '10', 'U', 'O', 'K', 'A']; // Schafkopfdeck: 36 Karten
+        const cardValues = {'6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'U': 11, 'O': 12, 'K': 13, 'A': 14};
 
         let deck = [];
         let players = [];
@@ -722,6 +722,7 @@
         let pyramidRevealed = 0;
         let currentPyramidRow = 1;
         let placedCards = {};
+        let cardsPlacedThisTurn = 0; // Zähler für abgelegte Karten in dieser Runde
         let currentRevealedCard = null;
         let playersHandCards = {};
         let playerDrinks = {}; // Schluck-Tracker pro Spieler
@@ -735,20 +736,18 @@
         // Kartendeck initialisieren und mischen
         function createDeck() {
             deck = [];
-            // Zwei 32er Skatdecks für insgesamt 64 Karten
-            for (let deckNumber = 1; deckNumber <= 2; deckNumber++) {
-                for (let suit of suits) {
-                    for (let value of values) {
-                        deck.push({
-                            suit: suit,
-                            value: value,
-                            numValue: cardValues[value],
-                            isRed: suit === '♥' || suit === '♦'
-                        });
-                    }
+            // Ein 36er Schafkopfdeck
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({
+                        suit: suit,
+                        value: value,
+                        numValue: cardValues[value],
+                        isRed: suit === '♥' || suit === '♦'
+                    });
                 }
             }
-            console.log(`Deck erstellt: ${deck.length} Karten (2x Skatdeck)`);
+            console.log(`Deck erstellt: ${deck.length} Karten (Schafkopfdeck)`);
             shuffleDeck();
         }
 
@@ -839,6 +838,7 @@
             pyramidRevealed = 0;
             currentPyramidRow = 1;
             placedCards = {};
+            cardsPlacedThisTurn = 0; // Zähler zurücksetzen
             playersHandCards = {};
             
             setupPyramid();
@@ -949,6 +949,27 @@
                     handContainer.appendChild(cardDiv);
                 }
             });
+            
+            // Nach dem Erstellen der Karten die Hervorhebung anwenden falls nötig
+            highlightMatchingCards();
+        }
+        
+        function highlightMatchingCards() {
+            if (!currentRevealedCard || document.getElementById('card-placement-area').style.display !== 'block') {
+                return;
+            }
+            
+            const handContainer = document.getElementById('hand-cards');
+            const cardElements = handContainer.children;
+            
+            for (let i = 0; i < cardElements.length; i++) {
+                const handCard = handCards[i];
+                if (handCard && handCard.value === currentRevealedCard.value) {
+                    cardElements[i].classList.add('clickable');
+                } else {
+                    cardElements[i].classList.remove('clickable');
+                }
+            }
         }
 
         function revealPyramidCard(cardIndex) {
@@ -970,9 +991,9 @@
                 return;
             }
             
-            // Prüfen ob Spieler passende Karte hat (identische Karte - gleicher Wert UND gleiche Farbe!)
+            // Prüfen ob Spieler passende Karten hat (gleicher Wert, Farbe egal!)
             const matchingCards = handCards.filter((handCard, index) => 
-                handCard && handCard.value === currentRevealedCard.value && handCard.suit === currentRevealedCard.suit
+                handCard && handCard.value === currentRevealedCard.value
             );
             
             console.log('Aktuelle Pyramidenkarte:', currentRevealedCard.value + currentRevealedCard.suit);
@@ -982,8 +1003,8 @@
             console.log('Detaillierte Prüfung:');
             handCards.forEach((card, index) => {
                 if (card) {
-                    const matches = card.value === currentRevealedCard.value && card.suit === currentRevealedCard.suit;
-                    console.log(`  ${card.value}${card.suit} == ${currentRevealedCard.value}${currentRevealedCard.suit}? ${matches}`);
+                    const matches = card.value === currentRevealedCard.value;
+                    console.log(`  ${card.value}${card.suit} == ${currentRevealedCard.value}? ${matches}`);
                 }
             });
             
@@ -1015,7 +1036,7 @@
             
             for (let i = 0; i < cardElements.length; i++) {
                 const handCard = handCards[i];
-                if (handCard && matchingCards.some(mc => mc.value === handCard.value && mc.suit === handCard.suit)) {
+                if (handCard && matchingCards.some(mc => mc.value === handCard.value)) {
                     cardElements[i].classList.add('clickable');
                 } else {
                     cardElements[i].classList.remove('clickable');
@@ -1032,8 +1053,8 @@
             const handCard = handCards[cardIndex];
             if (!handCard || !currentRevealedCard) return;
             
-            // Prüfen ob Karte passt (identische Karte - gleicher Wert UND gleiche Farbe!)
-            if (handCard.value !== currentRevealedCard.value || handCard.suit !== currentRevealedCard.suit) {
+            // Prüfen ob Karte passt (gleicher Wert, Farbe egal!)
+            if (handCard.value !== currentRevealedCard.value) {
                 return;
             }
             
@@ -1047,8 +1068,20 @@
             
             // UI aktualisieren
             displayHandCards();
-            hideCardPlacement();
-            showDrinkDistribution();
+            
+            // Prüfen ob noch weitere passende Karten vorhanden sind
+            const remainingMatchingCards = handCards.filter(handCard => 
+                handCard && handCard.value === currentRevealedCard.value
+            );
+            
+            if (remainingMatchingCards.length > 0) {
+                // Noch passende Karten vorhanden - weiterhin grün anzeigen
+                showCardPlacement(remainingMatchingCards);
+            } else {
+                // Keine passenden Karten mehr - Schluckverteilung anzeigen
+                hideCardPlacement();
+                showDrinkDistribution();
+            }
         }
 
         function placeCardOnPyramid(handCardIndex, pyramidIndex) {
@@ -1061,6 +1094,7 @@
             
             pyramidPosition.appendChild(placedCardDiv);
             placedCards[pyramidIndex] = handCard;
+            cardsPlacedThisTurn++; // Zähler erhöhen
         }
 
         function hideCardPlacement() {
@@ -1077,7 +1111,13 @@
 
         function skipCardPlacement() {
             hideCardPlacement();
-            nextPlayerOrContinue();
+            
+            // Wenn Karten abgelegt wurden, Schluckverteilung anzeigen
+            if (cardsPlacedThisTurn > 0) {
+                showDrinkDistribution();
+            } else {
+                nextPlayerOrContinue();
+            }
         }
 
         function showNoMatchingCards() {
@@ -1119,6 +1159,7 @@
             if (currentPlayerIndex === 0) {
                 // Alle Spieler hatten ihre Chance - nächste Karte aufdecken
                 pyramidRevealed++;
+                cardsPlacedThisTurn = 0; // Zähler für neue Karte zurücksetzen
                 
                 if (pyramidRevealed < pyramidCards.length) {
                     // Nächste Karte automatisch aufdecken
@@ -1142,7 +1183,7 @@
             const distributionArea = document.getElementById('drink-distribution-area');
             const distributionDiv = document.getElementById('drink-distribution');
             
-            const drinksToDistribute = currentPyramidRow; // Reihe 1=1 Schluck, Reihe 2=2, etc.
+            const drinksToDistribute = currentPyramidRow * cardsPlacedThisTurn; // Reihe * Anzahl abgelegter Karten
             document.getElementById('drinks-to-distribute').textContent = drinksToDistribute;
             
             distributionDiv.innerHTML = '';
@@ -1160,7 +1201,7 @@
         }
 
         function validateDrinkDistribution() {
-            const drinksToDistribute = currentPyramidRow;
+            const drinksToDistribute = currentPyramidRow * cardsPlacedThisTurn;
             let totalAssigned = 0;
             
             players.forEach(player => {
@@ -1291,13 +1332,13 @@
                     console.log('Deck leer beim Stechen! Verwende Notfall-Karte.');
                     // Notfall: zufällige Karte generieren
                     const suits = ['♠', '♥', '♦', '♣'];
-                    const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+                    const values = ['6', '7', '8', '9', '10', 'U', 'O', 'K', 'A'];
                     const randomSuit = suits[Math.floor(Math.random() * suits.length)];
                     const randomValue = values[Math.floor(Math.random() * values.length)];
                     const drawnCard = {
                         suit: randomSuit,
                         value: randomValue,
-                        numValue: {'7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}[randomValue],
+                        numValue: {'6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'U': 11, 'O': 12, 'K': 13, 'A': 14}[randomValue],
                         isRed: randomSuit === '♥' || randomSuit === '♦'
                     };
                     tieCards.push({player: players[playerIndex], card: drawnCard});
@@ -1568,7 +1609,7 @@
             resultDiv.style.display = 'block';
             setTimeout(() => {
                 resultDiv.style.display = 'none';
-            }, 3000);
+            }, 5000);
             
             displayBusRow();
             updateBusInfo();

@@ -22,8 +22,8 @@ Eine vollständige Web-App für das beliebte deutsche Trinkspiel "Busfahren". Sp
 - **Schluck-Tracker**: Jeder sieht seine eigenen Schlucke mit "Getrunken"-Buttons
 
 ### 🃏 **Authentische Spielregeln**
-- **2x 32er Skatdeck** (64 Karten total)
-- **Identische Karten**: Nur exakt gleiche Karten (Wert UND Farbe) können abgelegt werden
+- **36er Schafkopfdeck** (36 Karten total)
+- **Passende Karten**: Karten mit gleichem Wert (Farbe egal) können abgelegt werden
 - **Busfahrer-Auswahl**: Spieler mit den meisten Handkarten
 - **Stechen bei Gleichstand**: Höchste Karte verliert
 - **Kartenwerte**: Ass = 14 (höchste Karte)
