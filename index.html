@@ -26,7 +26,12 @@
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             min-height: 100vh;
-            padding: 20px;
+            padding: 5px;
+        }
+
+        /* Pyramiden-Phase: Minimal padding am PC */
+        body.pyramid-active {
+            padding: 2px;
         }
 
         .container {
@@ -36,16 +41,16 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         .game-section {
             background: rgba(255,255,255,0.1);
             border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             backdrop-filter: blur(10px);
             display: none;
         }
@@ -55,23 +60,23 @@
         }
 
         .game-section h2 {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
         }
 
         .card {
-            width: 80px;
-            height: 112px;
+            width: 70px;
+            height: 98px;
             background: white;
             color: black;
             border-radius: 8px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin: 5px;
+            margin: 3px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             cursor: pointer;
@@ -123,32 +128,32 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px 0;
+            margin: 8px 0;
         }
 
         .pyramid-row {
             display: flex;
-            margin: 5px 0;
+            margin: 1px 0;
         }
 
         .hand-cards {
             display: flex;
             justify-content: center;
-            margin: 20px 0;
+            margin: 8px 0;
             flex-wrap: wrap;
         }
 
         .bus-row {
             display: flex;
             justify-content: center;
-            margin: 20px 0;
+            margin: 10px 0;
             flex-wrap: wrap;
         }
 
         .pile {
             display: flex;
             position: relative;
-            margin: 10px;
+            margin: 5px;
         }
 
         .pile .card {
@@ -156,9 +161,9 @@
         }
 
         .pile {
-            min-width: 120px;
-            min-height: 112px;
-            margin: 10px;
+            min-width: 105px;
+            min-height: 98px;
+            margin: 5px;
             flex: 0 0 auto;
         }
 
@@ -174,22 +179,22 @@
         .bus-row {
             display: flex;
             justify-content: center;
-            margin: 30px 0;
+            margin: 15px 0;
             flex-wrap: wrap;
-            gap: 15px;
-            padding: 0 10px;
+            gap: 10px;
+            padding: 0 5px;
         }
 
         button {
             background: linear-gradient(45deg, #ff6b6b, #ee5a52);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            margin: 10px;
+            margin: 5px;
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
@@ -212,29 +217,29 @@
 
         .info {
             background: rgba(255,255,255,0.2);
-            padding: 15px;
+            padding: 8px;
             border-radius: 10px;
-            margin: 20px 0;
+            margin: 8px 0;
             text-align: center;
         }
 
         .drinks-counter {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
             color: #ffeb3b;
         }
 
         .players-section {
-            margin: 20px 0;
+            margin: 15px 0;
             text-align: center;
         }
 
         .player-input {
-            margin: 10px;
-            padding: 10px;
+            margin: 5px;
+            padding: 8px;
             border-radius: 5px;
             border: none;
-            font-size: 16px;
+            font-size: 14px;
             display: inline-block;
         }
 
@@ -252,8 +257,8 @@
 
         .player-card {
             background: rgba(255,255,255,0.2);
-            padding: 15px;
-            margin: 10px;
+            padding: 12px;
+            margin: 8px;
             border-radius: 10px;
             text-align: center;
             min-width: 120px;
@@ -268,11 +273,11 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            margin: 20px 0;
+            margin: 8px 0;
         }
 
         .drink-assign {
-            margin: 10px;
+            margin: 5px;
             text-align: center;
         }
 
@@ -301,15 +306,15 @@
 
         .transition-content {
             background: rgba(255,255,255,0.1);
-            padding: 50px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             backdrop-filter: blur(20px);
         }
 
         .transition-content h2 {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
             color: #ffeb3b;
         }
 
@@ -322,22 +327,23 @@
             background: rgba(244, 67, 54, 0.2);
             border: 2px solid #f44336;
             border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            max-height: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 200px;
             overflow-y: auto;
         }
 
         .drink-tracker h3 {
             color: #f44336;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             text-align: center;
+            font-size: 1.1rem;
         }
 
         .drink-item {
             background: rgba(255,255,255,0.1);
-            padding: 10px;
-            margin: 5px 0;
+            padding: 8px;
+            margin: 3px 0;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
@@ -362,10 +368,11 @@
             background: rgba(255,235,59,0.2);
             border: 2px solid #ffeb3b;
             border-radius: 10px;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 8px;
+            margin: 5px 0;
             text-align: center;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .exit-button {
@@ -400,51 +407,342 @@
             position: relative;
         }
 
+        /* Spezielle Styling für Setup-Phase */
+        #setup .game-section {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #setup h1 {
+            margin-bottom: 25px;
+            font-size: 2rem;
+        }
+
+        #setup .controls {
+            margin: 25px 0;
+        }
+
+        /* EXTREM kompaktes Styling für Pyramiden-Phase */
+        #pyramid-round .pyramid {
+            margin: 0px 0;
+        }
+
+        #pyramid-round .pyramid-row {
+            margin: -2px 0;
+        }
+
+        #pyramid-round .hand-cards {
+            margin: 0px 0;
+        }
+
+        #pyramid-round .info {
+            margin: 0px 0;
+            padding: 2px;
+            font-size: 0.8rem;
+            line-height: 1.1;
+        }
+
+        #pyramid-round .drink-distribution {
+            margin: 0px 0;
+        }
+
+        #pyramid-round .drink-assign {
+            margin: 0px;
+        }
+
+        #pyramid-round .card {
+            width: 50px;
+            height: 70px;
+            font-size: 10px;
+            margin: 0px;
+        }
+
+        #pyramid-round .game-section {
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        #pyramid-round h1 {
+            margin-bottom: 5px;
+            font-size: 1.4rem;
+        }
+
+        #pyramid-round h2 {
+            margin-bottom: 2px;
+            font-size: 1.1rem;
+        }
+
+        #pyramid-round .controls {
+            margin: 5px 0;
+        }
+
+        #pyramid-round button {
+            padding: 4px 8px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        #pyramid-round .pile {
+            min-width: 70px;
+            min-height: 70px;
+            margin: 0px;
+        }
+
+        #pyramid-round .drink-tracker {
+            max-height: 100px;
+            padding: 3px;
+            margin: 0px 0;
+        }
+
+        #pyramid-round .drink-item {
+            padding: 2px;
+            margin: 0px 0;
+            font-size: 0.8rem;
+            line-height: 1.1;
+        }
+
+        #pyramid-round .drink-summary {
+            padding: 2px;
+            margin: 0px 0;
+            font-size: 0.75rem;
+            line-height: 1.1;
+        }
+
+        #pyramid-round .player-card {
+            padding: 4px;
+            margin: 1px;
+            min-width: 70px;
+            font-size: 0.8rem;
+        }
+
+        #pyramid-round .drink-assign input {
+            width: 40px;
+            padding: 2px;
+            margin: 1px;
+            font-size: 0.8rem;
+        }
+
+        #pyramid-round .player-list {
+            margin: 5px 0;
+        }
+
+        #pyramid-round .players-section {
+            margin: 5px 0;
+        }
+
+        /* Kompakter horizontaler Header für Pyramidenrunde */
+        .pyramid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 3px;
+            background: rgba(255,255,255,0.1);
+            padding: 3px 35px 3px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        .pyramid-title h2 {
+            font-size: 1rem;
+            margin: 0;
+            color: #ffeb3b;
+        }
+
+        .pyramid-player-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .player-label {
+            font-weight: normal;
+            opacity: 0.8;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #4caf50;
+            font-size: 0.9rem;
+        }
+
+        .pyramid-progress-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.75rem;
+            text-align: right;
+        }
+
+        .row-info {
+            font-weight: bold;
+            color: #ff9800;
+        }
+
+        /* Mobile Layout für Header */
         @media (max-width: 768px) {
+            .pyramid-header {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 2px 30px 2px 5px;
+                gap: 1px;
+            }
+            
+            .pyramid-title {
+                text-align: center;
+            }
+            
+            .pyramid-title h2 {
+                font-size: 0.9rem;
+            }
+            
+            .pyramid-player-info {
+                justify-content: center;
+                font-size: 0.75rem;
+            }
+            
+            .pyramid-progress-info {
+                align-items: center;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 3px;
+            }
+            
             .card {
                 width: 50px;
                 height: 70px;
                 font-size: 10px;
+                margin: 2px;
+            }
+            
+            button {
+                padding: 6px 12px;
+                font-size: 12px;
+                margin: 3px;
+            }
+            
+            .controls {
+                margin: 5px 0;
+            }
+            
+            #setup .controls {
+                margin: 15px 0;
+            }
+            
+            .pyramid {
+                margin: 5px 0;
+            }
+            
+            #pyramid-round .pyramid {
+                margin: 3px 0;
+            }
+            
+            .hand-cards {
+                margin: 5px 0;
+            }
+            
+            #pyramid-round .hand-cards {
+                margin: 1px 0;
+            }
+            
+            #pyramid-round .pyramid {
+                margin: 1px 0;
+            }
+            
+            #pyramid-round .pyramid-row {
+                margin: -2px 0;
+            }
+            
+            #pyramid-round .card {
+                width: 45px;
+                height: 63px;
+                font-size: 9px;
+                margin: 1px;
+            }
+            
+            #pyramid-round .info {
+                padding: 3px;
+                margin: 1px 0;
+                font-size: 0.8rem;
+            }
+            
+            #pyramid-round .drink-distribution {
+                margin: 1px 0;
+            }
+            
+            #pyramid-round button {
+                padding: 4px 8px;
+                font-size: 11px;
+                margin: 2px;
+            }
+            
+            .info {
+                padding: 8px;
+                margin: 5px 0;
+                font-size: 0.9rem;
+            }
+            
+            .player-card {
+                padding: 8px;
+                margin: 3px;
+                min-width: 80px;
+                font-size: 0.9rem;
             }
             
             h1 {
-                font-size: 2rem;
-                margin-bottom: 20px;
+                font-size: 1.5rem;
+                margin-bottom: 8px;
+            }
+            
+            #setup h1 {
+                font-size: 1.7rem;
+                margin-bottom: 15px;
             }
             
             .game-section {
+                padding: 8px;
+            }
+            
+            #setup .game-section {
                 padding: 15px;
+                margin-bottom: 15px;
             }
 
             .pile {
                 min-width: 50px;
-                min-height: 120px;
-                margin: 5px;
+                min-height: 70px;
+                margin: 3px;
             }
 
             .bus-row {
-                gap: 8px;
-                margin: 20px 0;
-                padding: 0 5px;
+                gap: 5px;
+                margin: 8px 0;
+                padding: 0 3px;
                 flex-wrap: nowrap;
                 justify-content: space-between;
             }
 
             .transition-content {
-                padding: 20px;
+                padding: 15px;
             }
 
             .transition-content h2 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+                margin-bottom: 10px;
             }
 
             .transition-content p {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
 
             .drink-tracker {
-                max-height: 200px;
-                padding: 15px;
+                max-height: 150px;
+                padding: 8px;
             }
 
             .exit-button {
@@ -454,7 +752,7 @@
             }
 
             .players-section {
-                margin: 15px 0;
+                margin: 5px 0;
             }
 
             .player-input {
@@ -620,11 +918,20 @@
         <!-- Pyramid Round Section -->
         <div class="game-section" id="pyramid-section">
             <button class="exit-button" onclick="confirmExitPyramid()" title="Spiel beenden">×</button>
-            <h2>Pyramidenrunde</h2>
-            <div class="info">
-                <p>Spieler: <span id="current-pyramid-player">-</span></p>
-                <p>Karte <span id="pyramid-progress">1</span> von 15 wird aufgedeckt</p>
-                <p>Reihe <span id="current-pyramid-row">1</span> (Wert: <span id="pyramid-row-value">1</span> Schluck(e))</p>
+            
+            <!-- Kompakter horizontaler Header -->
+            <div class="pyramid-header">
+                <div class="pyramid-title">
+                    <h2>Pyramidenrunde</h2>
+                </div>
+                <div class="pyramid-player-info">
+                    <span class="player-label">Spieler:</span>
+                    <span id="current-pyramid-player" class="player-name">-</span>
+                </div>
+                <div class="pyramid-progress-info">
+                    <span>Karte <span id="pyramid-progress">1</span>/15</span>
+                    <span class="row-info">Reihe <span id="current-pyramid-row">1</span> (<span id="pyramid-row-value">1</span> Schluck(e))</span>
+                </div>
             </div>
             <div class="pyramid" id="pyramid"></div>
             <!-- Drink Tracker in Pyramid -->
@@ -842,6 +1149,9 @@
             playerCardsPlaced = {}; // Zähler zurücksetzen
             finishOrder = []; // Finish-Tracking zurücksetzen
             playersHandCards = {};
+            
+            // Body-Klasse für extra kompaktes Layout setzen
+            document.body.classList.add('pyramid-active');
             
             setupPyramid();
             dealAllPlayersHandCards();
@@ -1195,12 +1505,37 @@
         }
 
         function nextPlayerOrContinue() {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            // Prüfen ob alle Spieler mit Karten schon eine Chance hatten
+            if (!window.playersWhoHadTurn) {
+                window.playersWhoHadTurn = new Set();
+            }
             
-            if (currentPlayerIndex === 0) {
-                // Alle Spieler hatten ihre Chance - nächste Karte aufdecken
+            // Aktuellen Spieler zur Liste hinzufügen
+            const currentPlayer = players[currentPlayerIndex];
+            window.playersWhoHadTurn.add(currentPlayer);
+            console.log(`${currentPlayer} hatte seinen Turn. Spieler mit Turn:`, Array.from(window.playersWhoHadTurn));
+            
+            // Finde alle Spieler mit Karten
+            const playersWithCards = players.filter(player => {
+                const playerCards = playersHandCards[player] || [];
+                const cardCount = playerCards.filter(card => card !== null).length;
+                return cardCount > 0;
+            });
+            
+            console.log('Spieler mit Karten:', playersWithCards);
+            console.log('Spieler die schon dran waren:', Array.from(window.playersWhoHadTurn));
+            
+            // Prüfen ob alle Spieler mit Karten schon dran waren
+            const allPlayersWithCardsHadTurn = playersWithCards.every(player => 
+                window.playersWhoHadTurn.has(player)
+            );
+            
+            if (allPlayersWithCardsHadTurn || playersWithCards.length === 0) {
+                console.log('Alle Spieler mit Karten hatten ihren Turn - nächste Pyramidenkarte');
+                // Alle Spieler mit Karten hatten ihre Chance - nächste Karte aufdecken
                 pyramidRevealed++;
                 playerCardsPlaced = {}; // Zähler für neue Karte zurücksetzen
+                window.playersWhoHadTurn = new Set(); // Reset für nächste Karte
                 
                 if (pyramidRevealed < pyramidCards.length) {
                     // Nächste Karte automatisch aufdecken
@@ -1213,7 +1548,7 @@
                         // Rekursiv zur nächsten Karte springen
                         nextPlayerOrContinue();
                     } else {
-                        // Wieder beim ersten Spieler anfangen
+                        // Wieder beim ersten Spieler mit Karten anfangen
                         currentPlayerIndex = 0;
                         showPlayerTransition();
                     }
@@ -1223,6 +1558,7 @@
                 }
             } else {
                 // Nächster Spieler
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
                 showPlayerTransition();
             }
         }
@@ -1369,6 +1705,10 @@
         // Busfahrerrunde
         function startBusDriverRound() {
             gamePhase = 'bus';
+            
+            // Pyramid-Layout-Klasse entfernen
+            document.body.classList.remove('pyramid-active');
+            
             showSection('bus-section');
             
             // Busfahrer bestimmen: Spieler mit den wenigsten Handkarten
@@ -1406,7 +1746,7 @@
                     
                     if (finishedCandidates.length === candidateNames.length) {
                         // Alle Kandidaten sind in finishOrder - letzter wird Busfahrer
-                        const lastFinishedPlayer = finishedCandidates[finishedCandidates.length - 1];
+                        const lastFinishedPlayer = finishOrder[finishOrder.length - 1];
                         const lastPlayerIndex = players.indexOf(lastFinishedPlayer);
                         console.log(`Finish-Reihenfolge:`, finishOrder, `→ ${lastFinishedPlayer} wird Busfahrer`);
                         return lastPlayerIndex;
@@ -1847,6 +2187,9 @@
             busDrinks = 0;
             playerDrinks = {}; // Schluck-Tracker zurücksetzen
             finishOrder = []; // Finish-Tracking zurücksetzen
+            
+            // Alle Layout-Klassen entfernen
+            document.body.classList.remove('pyramid-active');
             
             showSection('setup-section');
             updatePlayerList();
