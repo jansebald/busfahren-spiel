@@ -153,13 +153,13 @@
         }
 
         .pile .card:nth-child(1) { z-index: 1; }
-        .pile .card:nth-child(2) { z-index: 2; left: 12px; top: 3px; }
-        .pile .card:nth-child(3) { z-index: 3; left: 24px; top: 6px; }
-        .pile .card:nth-child(4) { z-index: 4; left: 36px; top: 9px; }
-        .pile .card:nth-child(5) { z-index: 5; left: 48px; top: 12px; }
-        .pile .card:nth-child(n+6) { z-index: 6; left: 60px; top: 15px; transform: rotate(5deg); }
-        .pile .card:nth-child(n+7) { z-index: 7; left: 72px; top: 18px; transform: rotate(-3deg); }
-        .pile .card:nth-child(n+8) { z-index: 8; left: 84px; top: 21px; transform: rotate(7deg); }
+        .pile .card:nth-child(2) { z-index: 2; left: 0px; top: 5px; }
+        .pile .card:nth-child(3) { z-index: 3; left: 0px; top: 10px; }
+        .pile .card:nth-child(4) { z-index: 4; left: 0px; top: 15px; }
+        .pile .card:nth-child(5) { z-index: 5; left: 0px; top: 20px; }
+        .pile .card:nth-child(n+6) { z-index: 6; left: 0px; top: 25px; transform: rotate(2deg); }
+        .pile .card:nth-child(n+7) { z-index: 7; left: 0px; top: 30px; transform: rotate(-2deg); }
+        .pile .card:nth-child(n+8) { z-index: 8; left: 0px; top: 35px; transform: rotate(3deg); }
         
         .bus-row {
             display: flex;
@@ -360,6 +360,7 @@
             
             h1 {
                 font-size: 2rem;
+                margin-bottom: 20px;
             }
             
             .game-section {
@@ -367,23 +368,17 @@
             }
 
             .pile {
-                min-width: 80px;
-                min-height: 70px;
+                min-width: 50px;
+                min-height: 120px;
                 margin: 5px;
             }
-
-            .pile .card:nth-child(2) { left: 8px; top: 2px; }
-            .pile .card:nth-child(3) { left: 16px; top: 4px; }
-            .pile .card:nth-child(4) { left: 24px; top: 6px; }
-            .pile .card:nth-child(5) { left: 32px; top: 8px; }
-            .pile .card:nth-child(n+6) { left: 40px; top: 10px; transform: rotate(5deg); }
-            .pile .card:nth-child(n+7) { left: 48px; top: 12px; transform: rotate(-3deg); }
-            .pile .card:nth-child(n+8) { left: 56px; top: 14px; transform: rotate(7deg); }
 
             .bus-row {
                 gap: 8px;
                 margin: 20px 0;
                 padding: 0 5px;
+                flex-wrap: nowrap;
+                justify-content: space-between;
             }
 
             .transition-content {
@@ -402,6 +397,36 @@
                 max-height: 200px;
                 padding: 15px;
             }
+
+            .players-section {
+                margin: 15px 0;
+            }
+
+            .player-input {
+                width: 100%;
+                max-width: 250px;
+                margin: 5px 0;
+            }
+
+            .player-list {
+                gap: 10px;
+            }
+
+            .player-card {
+                min-width: 100px;
+                padding: 10px;
+                margin: 5px;
+            }
+
+            .controls {
+                margin: 15px 0;
+            }
+
+            .controls label {
+                display: block;
+                margin: 10px 0;
+                font-size: 14px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -412,26 +437,23 @@
             }
 
             .pile {
-                min-width: 70px;
-                min-height: 63px;
-                margin: 3px;
+                min-width: 45px;
+                min-height: 140px;
+                margin: 2px;
             }
 
-            .pile .card:nth-child(2) { left: 6px; top: 1px; }
-            .pile .card:nth-child(3) { left: 12px; top: 2px; }
-            .pile .card:nth-child(4) { left: 18px; top: 3px; }
-            .pile .card:nth-child(5) { left: 24px; top: 4px; }
-            .pile .card:nth-child(n+6) { left: 30px; top: 5px; transform: rotate(5deg); }
-
             .bus-row {
-                gap: 5px;
-                justify-content: flex-start;
-                overflow-x: auto;
+                gap: 3px;
+                justify-content: space-around;
+                overflow-x: visible;
                 padding: 10px 5px;
+                flex-wrap: nowrap;
             }
 
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+                margin-bottom: 15px;
+                padding: 0 10px;
             }
 
             .game-section {
@@ -442,6 +464,30 @@
                 padding: 8px 16px;
                 font-size: 14px;
                 margin: 5px;
+            }
+
+            .player-input {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .player-card {
+                min-width: 80px;
+                padding: 8px;
+                margin: 3px;
+                font-size: 12px;
+            }
+
+            .controls label {
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            .info {
+                padding: 10px;
+                margin: 10px 0;
+                font-size: 14px;
             }
         }
     </style>
