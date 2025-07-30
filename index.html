@@ -358,6 +358,32 @@
             font-weight: bold;
         }
 
+        .exit-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(45deg, #f44336, #d32f2f) !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 12px !important;
+            border-radius: 20px !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin: 0 !important;
+        }
+
+        .exit-button:hover {
+            background: linear-gradient(45deg, #d32f2f, #b71c1c) !important;
+            transform: translateY(-1px);
+        }
+
+        .game-section {
+            position: relative;
+        }
+
         @media (max-width: 768px) {
             .card {
                 width: 50px;
@@ -516,10 +542,6 @@
             </div>
             <div class="controls">
                 <label>
-                    <input type="checkbox" id="enable-question-round"> Fragerunde aktivieren
-                </label>
-                <br>
-                <label>
                     <input type="checkbox" id="skip-pyramid"> Pyramidenrunde überspringen (direkt Busfahren)
                 </label>
             </div>
@@ -528,22 +550,6 @@
             </div>
         </div>
 
-        <!-- Question Round Section -->
-        <div class="game-section" id="question-section">
-            <h2>Fragerunde</h2>
-            <div class="info">
-                <p>Spieler: <span id="current-question-player"></span></p>
-                <p>Frage <span id="question-number">1</span> von 4</p>
-            </div>
-            <div id="question-area">
-                <div class="card" id="question-card"></div>
-                <p id="question-text"></p>
-            </div>
-            <div class="controls" id="question-controls"></div>
-            <div class="info">
-                <p class="drinks-counter">Schlucke zu trinken: <span id="question-drinks">0</span></p>
-            </div>
-        </div>
 
         <!-- Player Transition Screen -->
         <div class="player-transition" id="player-transition" style="display: none;">
@@ -567,6 +573,7 @@
 
         <!-- Pyramid Round Section -->
         <div class="game-section" id="pyramid-section">
+            <button class="exit-button" onclick="confirmExitPyramid()" title="Spiel beenden">❌ Beenden</button>
             <h2>Pyramidenrunde</h2>
             <div class="info">
                 <p>Spieler: <span id="current-pyramid-player">-</span></p>
@@ -664,9 +671,6 @@
         let players = [];
         let currentPlayerIndex = 0;
         let gamePhase = 'setup';  // setup, question, pyramid, bus, gameover
-        let questionRoundEnabled = false;
-        let questionCount = 0;
-        let questionDrinks = 0;
         let pyramidCards = [];
         let handCards = [];
         let pyramidRevealed = 0;
@@ -750,7 +754,6 @@
 
         // Spiel starten
         function startGame() {
-            questionRoundEnabled = document.getElementById('enable-question-round').checked;
             const skipPyramid = document.getElementById('skip-pyramid').checked;
             createDeck();
             
@@ -758,8 +761,6 @@
                 // Direkt zur Busfahrerrunde - mit zufälligen Handkarten für realistische Auswahl
                 setupTestHandCards();
                 startBusDriverRound();
-            } else if (questionRoundEnabled) {
-                startQuestionRound();
             } else {
                 startPyramidRound();
             }
@@ -784,81 +785,6 @@
             });
         }
 
-        // Fragerunde
-        function startQuestionRound() {
-            gamePhase = 'question';
-            showSection('question-section');
-            questionCount = 0;
-            questionDrinks = 0;
-            currentPlayerIndex = 0;
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            if (questionCount >= 4) {
-                document.getElementById('question-drinks').textContent = questionDrinks;
-                setTimeout(() => {
-                    startPyramidRound();
-                }, 2000);
-                return;
-            }
-
-            questionCount++;
-            const currentPlayer = players[currentPlayerIndex];
-            document.getElementById('current-question-player').textContent = currentPlayer;
-            document.getElementById('question-number').textContent = questionCount;
-            
-            const card = deck.pop();
-            displayCard('question-card', card, false);
-            
-            const questions = [
-                { text: "Rot oder Schwarz?", answers: ['Rot', 'Schwarz'], check: (guess, card) => 
-                    (guess === 'Rot' && card.isRed) || (guess === 'Schwarz' && !card.isRed) },
-                { text: "Höher oder niedriger als die vorherige Karte?", answers: ['Höher', 'Niedriger'], check: (guess, card) => 
-                    questionCount === 2 ? true : (guess === 'Höher' && card.numValue > questionCards[0].numValue) || (guess === 'Niedriger' && card.numValue < questionCards[0].numValue) },
-                { text: "Zwischen den ersten beiden Karten?", answers: ['Ja', 'Nein'], check: (guess, card) => {
-                    const min = Math.min(questionCards[0].numValue, questionCards[1].numValue);
-                    const max = Math.max(questionCards[0].numValue, questionCards[1].numValue);
-                    const between = card.numValue > min && card.numValue < max;
-                    return (guess === 'Ja' && between) || (guess === 'Nein' && !between);
-                }},
-                { text: "Welche Farbe?", answers: ['♠', '♥', '♦', '♣'], check: (guess, card) => guess === card.suit }
-            ];
-
-            if (!window.questionCards) window.questionCards = [];
-            window.questionCards.push(card);
-
-            const question = questions[questionCount - 1];
-            document.getElementById('question-text').textContent = question.text;
-            
-            const controls = document.getElementById('question-controls');
-            controls.innerHTML = '';
-            
-            question.answers.forEach(answer => {
-                const btn = document.createElement('button');
-                btn.textContent = answer;
-                btn.onclick = () => answerQuestion(answer, question.check, card);
-                controls.appendChild(btn);
-            });
-        }
-
-        function answerQuestion(guess, checkFunction, card) {
-            const correct = checkFunction(guess, card);
-            
-            if (!correct) {
-                questionDrinks++;
-                document.getElementById('question-drinks').textContent = questionDrinks;
-            }
-            
-            setTimeout(() => {
-                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-                if (currentPlayerIndex === 0) {
-                    nextQuestion();
-                } else {
-                    nextQuestion();
-                }
-            }, 1000);
-        }
 
         // Pyramidenrunde
         function startPyramidRound() {
@@ -1642,6 +1568,21 @@
             }
         }
 
+        function confirmExitPyramid() {
+            const confirmed = confirm(
+                `🛑 Pyramidenrunde wirklich beenden?\n\n` +
+                `Aktueller Spieler: ${players[currentPlayerIndex]}\n` +
+                `Pyramide: ${pyramidRevealed} von ${pyramidCards.length} Karten aufgedeckt\n` +
+                `Reihe: ${currentPyramidRow} von 5\n\n` +
+                `Fortschritt geht verloren!`
+            );
+            
+            if (confirmed) {
+                // Spiel beenden und zum Hauptmenü
+                restartGame();
+            }
+        }
+
         function addDrinksToPlayer(player, amount, fromPlayer, reason) {
             if (!playerDrinks[player]) {
                 playerDrinks[player] = [];
@@ -1700,9 +1641,6 @@
             players = [];
             currentPlayerIndex = 0;
             gamePhase = 'setup';
-            questionRoundEnabled = false;
-            questionCount = 0;
-            questionDrinks = 0;
             pyramidCards = [];
             handCards = [];
             pyramidRevealed = 0;
@@ -1721,7 +1659,6 @@
             
             // Reset form elements
             document.getElementById('player-name').value = '';
-            document.getElementById('enable-question-round').checked = false;
             document.getElementById('skip-pyramid').checked = false;
         }
 
