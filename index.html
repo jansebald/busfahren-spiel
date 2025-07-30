@@ -216,6 +216,7 @@
 
         .players-section {
             margin: 20px 0;
+            text-align: center;
         }
 
         .player-input {
@@ -224,6 +225,12 @@
             border-radius: 5px;
             border: none;
             font-size: 16px;
+            display: inline-block;
+        }
+
+        .add-player-section {
+            text-align: center;
+            margin: 15px 0;
         }
 
         .player-list {
@@ -500,17 +507,16 @@
         <div class="game-section active" id="setup-section">
             <h2>Spielsetup</h2>
             <div class="players-section">
-                <input type="text" class="player-input" id="player-name" placeholder="Spielername eingeben" maxlength="20">
-                <button onclick="addPlayer()">Spieler hinzufügen</button>
+                <div class="add-player-section">
+                    <input type="text" class="player-input" id="player-name" placeholder="Spielername eingeben" maxlength="20">
+                    <br>
+                    <button onclick="addPlayer()">Spieler hinzufügen</button>
+                </div>
                 <div class="player-list" id="player-list"></div>
             </div>
             <div class="controls">
                 <label>
                     <input type="checkbox" id="enable-question-round"> Fragerunde aktivieren
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="enable-test-mode"> Testmodus (mehr Matches)
                 </label>
                 <br>
                 <label>
@@ -904,7 +910,6 @@
 
         function dealAllPlayersHandCards() {
             playersHandCards = {};
-            const testMode = document.getElementById('enable-test-mode').checked;
             
             players.forEach(player => {
                 playersHandCards[player] = [];
@@ -912,13 +917,7 @@
                 
                 for (let i = 0; i < maxHandCards; i++) {
                     if (deck.length > 0) {
-                        if (testMode && i === 0 && pyramidCards.length > 0) {
-                            // Im Testmodus: erste Handkarte = erste Pyramidenkarte für mehr Matches
-                            const matchingCard = {...pyramidCards[0]};
-                            playersHandCards[player].push(matchingCard);
-                        } else {
-                            playersHandCards[player].push(deck.pop());
-                        }
+                        playersHandCards[player].push(deck.pop());
                     }
                 }
             });
@@ -1723,7 +1722,6 @@
             // Reset form elements
             document.getElementById('player-name').value = '';
             document.getElementById('enable-question-round').checked = false;
-            document.getElementById('enable-test-mode').checked = false;
             document.getElementById('skip-pyramid').checked = false;
         }
 
