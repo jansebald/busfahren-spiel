@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busfahren - Trinkspiel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .game-section h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        .card {
+            width: 80px;
+            height: 112px;
+            background: white;
+            color: black;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card.hidden {
+            background: #333;
+            color: #666;
+        }
+
+        .card.red {
+            color: #d32f2f;
+        }
+
+        .card.black {
+            color: #333;
+        }
+
+        .card.clickable {
+            border: 3px solid #4caf50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+
+        .card.placed {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .pyramid-position {
+            position: relative;
+            display: inline-block;
+        }
+
+        .pyramid-position .placed-card {
+            position: absolute;
+            top: -5px;
+            left: 5px;
+            z-index: 10;
+            transform: rotate(5deg);
+        }
+
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .pyramid-row {
+            display: flex;
+            margin: 5px 0;
+        }
+
+        .hand-cards {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .bus-row {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .pile {
+            display: flex;
+            position: relative;
+            margin: 10px;
+        }
+
+        .pile .card {
+            position: absolute;
+        }
+
+        .pile {
+            min-width: 120px;
+            min-height: 112px;
+            margin: 15px;
+        }
+
+        .pile .card:nth-child(1) { z-index: 1; }
+        .pile .card:nth-child(2) { z-index: 2; left: 12px; top: 3px; }
+        .pile .card:nth-child(3) { z-index: 3; left: 24px; top: 6px; }
+        .pile .card:nth-child(4) { z-index: 4; left: 36px; top: 9px; }
+        .pile .card:nth-child(5) { z-index: 5; left: 48px; top: 12px; }
+        .pile .card:nth-child(n+6) { z-index: 6; left: 60px; top: 15px; transform: rotate(5deg); }
+        .pile .card:nth-child(n+7) { z-index: 7; left: 72px; top: 18px; transform: rotate(-3deg); }
+        .pile .card:nth-child(n+8) { z-index: 8; left: 84px; top: 21px; transform: rotate(7deg); }
+        
+        .bus-row {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: nowrap;
+            gap: 20px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .drinks-counter {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffeb3b;
+        }
+
+        .players-section {
+            margin: 20px 0;
+        }
+
+        .player-input {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .player-card {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .player-card.active {
+            background: rgba(255,235,59,0.3);
+            border: 2px solid #ffeb3b;
+        }
+
+        .drink-distribution {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .drink-assign {
+            margin: 10px;
+            text-align: center;
+        }
+
+        .drink-assign input {
+            width: 60px;
+            padding: 5px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+
+        .player-transition {
+            background: rgba(0,0,0,0.9);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .transition-content {
+            background: rgba(255,255,255,0.1);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .transition-content h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffeb3b;
+        }
+
+        .transition-content p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .drink-tracker {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .drink-tracker h3 {
+            color: #f44336;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .drink-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drink-item button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .drink-item button:hover {
+            background: #45a049;
+        }
+
+        .drink-summary {
+            background: rgba(255,235,59,0.2);
+            border: 2px solid #ffeb3b;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                width: 60px;
+                height: 84px;
+                font-size: 12px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .game-section {
+                padding: 20px;
+            }
+
+            .transition-content {
+                padding: 30px;
+            }
+
+            .transition-content h2 {
+                font-size: 2rem;
+            }
+
+            .transition-content p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚌 Busfahren - Trinkspiel</h1>
+
+        <!-- Setup Section -->
+        <div class="game-section active" id="setup-section">
+            <h2>Spielsetup</h2>
+            <div class="players-section">
+                <input type="text" class="player-input" id="player-name" placeholder="Spielername eingeben" maxlength="20">
+                <button onclick="addPlayer()">Spieler hinzufügen</button>
+                <div class="player-list" id="player-list"></div>
+            </div>
+            <div class="controls">
+                <label>
+                    <input type="checkbox" id="enable-question-round"> Fragerunde aktivieren
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" id="enable-test-mode"> Testmodus (mehr Matches)
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" id="skip-pyramid"> Pyramidenrunde überspringen (direkt Busfahren)
+                </label>
+            </div>
+            <div class="controls">
+                <button onclick="startGame()" id="start-game-btn" disabled>Spiel starten</button>
+            </div>
+        </div>
+
+        <!-- Question Round Section -->
+        <div class="game-section" id="question-section">
+            <h2>Fragerunde</h2>
+            <div class="info">
+                <p>Spieler: <span id="current-question-player"></span></p>
+                <p>Frage <span id="question-number">1</span> von 4</p>
+            </div>
+            <div id="question-area">
+                <div class="card" id="question-card"></div>
+                <p id="question-text"></p>
+            </div>
+            <div class="controls" id="question-controls"></div>
+            <div class="info">
+                <p class="drinks-counter">Schlucke zu trinken: <span id="question-drinks">0</span></p>
+            </div>
+        </div>
+
+        <!-- Player Transition Screen -->
+        <div class="player-transition" id="player-transition" style="display: none;">
+            <div class="transition-content">
+                <h2 id="transition-player-name">Spieler</h2>
+                <p>Du bist dran!</p>
+                <p>Bereite dich vor und klicke auf "Weiter" wenn du bereit bist.</p>
+                
+                <!-- Drink Tracker -->
+                <div id="drink-tracker-transition" class="drink-tracker" style="display: none;">
+                    <h3>🍺 Deine Schlucke</h3>
+                    <div class="drink-summary" id="drink-summary-transition">
+                        Gesamt: <span id="total-drinks-transition">0</span> Schlucke
+                    </div>
+                    <div id="drink-list-transition"></div>
+                </div>
+                
+                <button onclick="continueToPlayerTurn()" style="font-size: 1.2rem; padding: 15px 30px;">Weiter</button>
+            </div>
+        </div>
+
+        <!-- Pyramid Round Section -->
+        <div class="game-section" id="pyramid-section">
+            <h2>Pyramidenrunde</h2>
+            <div class="info">
+                <p>Spieler: <span id="current-pyramid-player">-</span></p>
+                <p>Karte <span id="pyramid-progress">1</span> von 15 wird aufgedeckt</p>
+                <p>Reihe <span id="current-pyramid-row">1</span> (Wert: <span id="pyramid-row-value">1</span> Schluck(e))</p>
+            </div>
+            <div class="pyramid" id="pyramid"></div>
+            <!-- Drink Tracker in Pyramid -->
+            <div id="drink-tracker-pyramid" class="drink-tracker" style="display: none;">
+                <h3>🍺 Deine Schlucke</h3>
+                <div class="drink-summary" id="drink-summary-pyramid">
+                    Gesamt: <span id="total-drinks-pyramid">0</span> Schlucke
+                </div>
+                <div id="drink-list-pyramid"></div>
+            </div>
+            
+            <div class="info">
+                <p>Deine Handkarten:</p>
+            </div>
+            <div class="hand-cards" id="hand-cards"></div>
+            <div id="card-placement-area" style="display: none;">
+                <div class="info">
+                    <p>Klicke auf eine passende Handkarte um sie zu platzieren!</p>
+                    <p>Passende Karten: <span id="matching-info">-</span></p>
+                </div>
+                <div class="controls">
+                    <button onclick="skipCardPlacement()">Keine Karte platzieren</button>
+                </div>
+            </div>
+            <div id="no-cards-area" style="display: none;">
+                <div class="info">
+                    <p>Du hast keine passenden Karten.</p>
+                    <p>Die aufgedeckte Karte ist: <span id="revealed-card-info">-</span></p>
+                </div>
+                <div class="controls">
+                    <button onclick="continueWithoutCards()">Weiter</button>
+                </div>
+            </div>
+            <div id="drink-distribution-area" style="display: none;">
+                <div class="info">
+                    <p>Verteile <span id="drinks-to-distribute">0</span> Schluck(e):</p>
+                </div>
+                <div class="drink-distribution" id="drink-distribution"></div>
+                <div class="controls">
+                    <button onclick="distributeDrinks()">Schlucke verteilen</button>
+                    <button onclick="skipDistribution()">Überspringen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bus Driver Round Section -->
+        <div class="game-section" id="bus-section">
+            <h2>Busfahrerrunde</h2>
+            <div class="info">
+                <p>Busfahrer: <span id="bus-driver-name"></span></p>
+                <p>Position: <span id="bus-position">1</span> von 5</p>
+                <p class="drinks-counter">Schlucke getrunken: <span id="bus-drinks">0</span></p>
+            </div>
+            <div class="bus-row" id="bus-row"></div>
+            <div class="info">
+                <p>Aktuelle Karte: <span id="current-bus-card">-</span></p>
+                <p>Handstapel: <span id="hand-stack-count">0</span> Karten</p>
+            </div>
+            <div class="controls" id="bus-controls">
+                <button onclick="makeGuess('lower')">Niedriger</button>
+                <button onclick="makeGuess('equal')">Gleich</button>
+                <button onclick="makeGuess('higher')">Höher</button>
+            </div>
+            <div class="controls">
+                <button onclick="confirmEndGame()" style="background: linear-gradient(45deg, #f44336, #d32f2f); margin-top: 20px;">🛑 Spiel beenden</button>
+            </div>
+            <div class="info" id="bus-result" style="display: none;"></div>
+        </div>
+
+        <!-- Game Over Section -->
+        <div class="game-section" id="game-over-section">
+            <h2>🎉 Spiel beendet!</h2>
+            <div class="info">
+                <p>Herzlichen Glückwunsch! Das Busfahren ist erfolgreich beendet.</p>
+                <p>Busfahrer <span id="winner-name"></span> hat alle Karten erfolgreich gefahren!</p>
+            </div>
+            <div class="controls">
+                <button onclick="restartGame()">Neues Spiel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kartendeck erstellen und mischen
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A']; // Skatdeck: 32 Karten
+        const cardValues = {'7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14};
+
+        let deck = [];
+        let players = [];
+        let currentPlayerIndex = 0;
+        let gamePhase = 'setup';  // setup, question, pyramid, bus, gameover
+        let questionRoundEnabled = false;
+        let questionCount = 0;
+        let questionDrinks = 0;
+        let pyramidCards = [];
+        let handCards = [];
+        let pyramidRevealed = 0;
+        let currentPyramidRow = 1;
+        let placedCards = {};
+        let currentRevealedCard = null;
+        let playersHandCards = {};
+        let playerDrinks = {}; // Schluck-Tracker pro Spieler
+        let busDriverIndex = 0;
+        let busCards = [];
+        let busPiles = [];
+        let currentBusPosition = 0;
+        let handStack = [];
+        let busDrinks = 0;
+
+        // Kartendeck initialisieren und mischen
+        function createDeck() {
+            deck = [];
+            // Zwei 32er Skatdecks für insgesamt 64 Karten
+            for (let deckNumber = 1; deckNumber <= 2; deckNumber++) {
+                for (let suit of suits) {
+                    for (let value of values) {
+                        deck.push({
+                            suit: suit,
+                            value: value,
+                            numValue: cardValues[value],
+                            isRed: suit === '♥' || suit === '♦'
+                        });
+                    }
+                }
+            }
+            console.log(`Deck erstellt: ${deck.length} Karten (2x Skatdeck)`);
+            shuffleDeck();
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        // Spieler hinzufügen
+        function addPlayer() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            
+            if (name && !players.includes(name)) {
+                players.push(name);
+                updatePlayerList();
+                nameInput.value = '';
+                updateStartButton();
+            }
+        }
+
+        function updatePlayerList() {
+            const playerList = document.getElementById('player-list');
+            playerList.innerHTML = '';
+            
+            players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-card';
+                playerDiv.innerHTML = `
+                    ${player}
+                    <button onclick="removePlayer(${index})" style="margin-left: 10px; padding: 5px;">❌</button>
+                `;
+                playerList.appendChild(playerDiv);
+            });
+        }
+
+        function removePlayer(index) {
+            players.splice(index, 1);
+            updatePlayerList();
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = players.length === 0;
+        }
+
+        // Spiel starten
+        function startGame() {
+            questionRoundEnabled = document.getElementById('enable-question-round').checked;
+            const skipPyramid = document.getElementById('skip-pyramid').checked;
+            createDeck();
+            
+            if (skipPyramid) {
+                // Direkt zur Busfahrerrunde - mit zufälligen Handkarten für realistische Auswahl
+                setupTestHandCards();
+                startBusDriverRound();
+            } else if (questionRoundEnabled) {
+                startQuestionRound();
+            } else {
+                startPyramidRound();
+            }
+        }
+
+        function setupTestHandCards() {
+            // Für Test: Verschiedene Anzahl Handkarten pro Spieler simulieren
+            playersHandCards = {};
+            
+            players.forEach((player, index) => {
+                playersHandCards[player] = [];
+                // Verschiedene Anzahl Karten (0-3) für realistische Busfahrer-Auswahl
+                const cardCount = Math.floor(Math.random() * 4); // 0, 1, 2 oder 3 Karten
+                
+                for (let i = 0; i < cardCount; i++) {
+                    if (deck.length > 0) {
+                        playersHandCards[player].push(deck.pop());
+                    }
+                }
+                
+                console.log(`Test: ${player} bekommt ${cardCount} Karten`);
+            });
+        }
+
+        // Fragerunde
+        function startQuestionRound() {
+            gamePhase = 'question';
+            showSection('question-section');
+            questionCount = 0;
+            questionDrinks = 0;
+            currentPlayerIndex = 0;
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (questionCount >= 4) {
+                document.getElementById('question-drinks').textContent = questionDrinks;
+                setTimeout(() => {
+                    startPyramidRound();
+                }, 2000);
+                return;
+            }
+
+            questionCount++;
+            const currentPlayer = players[currentPlayerIndex];
+            document.getElementById('current-question-player').textContent = currentPlayer;
+            document.getElementById('question-number').textContent = questionCount;
+            
+            const card = deck.pop();
+            displayCard('question-card', card, false);
+            
+            const questions = [
+                { text: "Rot oder Schwarz?", answers: ['Rot', 'Schwarz'], check: (guess, card) => 
+                    (guess === 'Rot' && card.isRed) || (guess === 'Schwarz' && !card.isRed) },
+                { text: "Höher oder niedriger als die vorherige Karte?", answers: ['Höher', 'Niedriger'], check: (guess, card) => 
+                    questionCount === 2 ? true : (guess === 'Höher' && card.numValue > questionCards[0].numValue) || (guess === 'Niedriger' && card.numValue < questionCards[0].numValue) },
+                { text: "Zwischen den ersten beiden Karten?", answers: ['Ja', 'Nein'], check: (guess, card) => {
+                    const min = Math.min(questionCards[0].numValue, questionCards[1].numValue);
+                    const max = Math.max(questionCards[0].numValue, questionCards[1].numValue);
+                    const between = card.numValue > min && card.numValue < max;
+                    return (guess === 'Ja' && between) || (guess === 'Nein' && !between);
+                }},
+                { text: "Welche Farbe?", answers: ['♠', '♥', '♦', '♣'], check: (guess, card) => guess === card.suit }
+            ];
+
+            if (!window.questionCards) window.questionCards = [];
+            window.questionCards.push(card);
+
+            const question = questions[questionCount - 1];
+            document.getElementById('question-text').textContent = question.text;
+            
+            const controls = document.getElementById('question-controls');
+            controls.innerHTML = '';
+            
+            question.answers.forEach(answer => {
+                const btn = document.createElement('button');
+                btn.textContent = answer;
+                btn.onclick = () => answerQuestion(answer, question.check, card);
+                controls.appendChild(btn);
+            });
+        }
+
+        function answerQuestion(guess, checkFunction, card) {
+            const correct = checkFunction(guess, card);
+            
+            if (!correct) {
+                questionDrinks++;
+                document.getElementById('question-drinks').textContent = questionDrinks;
+            }
+            
+            setTimeout(() => {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                if (currentPlayerIndex === 0) {
+                    nextQuestion();
+                } else {
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        // Pyramidenrunde
+        function startPyramidRound() {
+            gamePhase = 'pyramid';
+            currentPlayerIndex = 0;
+            pyramidRevealed = 0;
+            currentPyramidRow = 1;
+            placedCards = {};
+            playersHandCards = {};
+            
+            setupPyramid();
+            dealAllPlayersHandCards();
+            
+            // Erste Karte sofort aufdecken
+            revealPyramidCard(0);
+            updatePyramidProgress();
+            
+            showPlayerTransition();
+        }
+
+        function setupPyramid() {
+            pyramidCards = [];
+            const pyramid = document.getElementById('pyramid');
+            pyramid.innerHTML = '';
+            
+            // 5 Reihen: 1, 2, 3, 4, 5 Karten (umgedreht)
+            for (let row = 1; row <= 5; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'pyramid-row';
+                
+                for (let col = 0; col < row; col++) {
+                    const card = deck.pop();
+                    pyramidCards.push(card);
+                    
+                    const positionDiv = document.createElement('div');
+                    positionDiv.className = 'pyramid-position';
+                    
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card hidden';
+                    cardDiv.id = `pyramid-${pyramidCards.length - 1}`;
+                    cardDiv.textContent = '?';
+                    
+                    positionDiv.appendChild(cardDiv);
+                    rowDiv.appendChild(positionDiv);
+                }
+                pyramid.appendChild(rowDiv);
+            }
+        }
+
+        function dealAllPlayersHandCards() {
+            playersHandCards = {};
+            const testMode = document.getElementById('enable-test-mode').checked;
+            
+            players.forEach(player => {
+                playersHandCards[player] = [];
+                const maxHandCards = Math.min(3, deck.length);
+                
+                for (let i = 0; i < maxHandCards; i++) {
+                    if (deck.length > 0) {
+                        if (testMode && i === 0 && pyramidCards.length > 0) {
+                            // Im Testmodus: erste Handkarte = erste Pyramidenkarte für mehr Matches
+                            const matchingCard = {...pyramidCards[0]};
+                            playersHandCards[player].push(matchingCard);
+                        } else {
+                            playersHandCards[player].push(deck.pop());
+                        }
+                    }
+                }
+            });
+        }
+
+        function showPlayerTransition() {
+            const currentPlayer = players[currentPlayerIndex];
+            document.getElementById('transition-player-name').textContent = currentPlayer;
+            
+            // Schluck-Tracker aktualisieren
+            updateDrinkTracker(currentPlayer, 'transition');
+            
+            document.getElementById('player-transition').style.display = 'flex';
+        }
+
+        function continueToPlayerTurn() {
+            document.getElementById('player-transition').style.display = 'none';
+            showSection('pyramid-section');
+            
+            const currentPlayer = players[currentPlayerIndex];
+            document.getElementById('current-pyramid-player').textContent = currentPlayer;
+            
+            handCards = [...playersHandCards[currentPlayer]];
+            displayHandCards();
+            
+            // Alle UI-Bereiche zurücksetzen
+            document.getElementById('card-placement-area').style.display = 'none';
+            document.getElementById('no-cards-area').style.display = 'none';
+            document.getElementById('drink-distribution-area').style.display = 'none';
+            
+            // Schluck-Tracker in Pyramiden-Sektion aktualisieren
+            updateDrinkTracker(currentPlayer, 'pyramid');
+            
+            console.log('Spieler:', currentPlayer, 'ist dran');
+            console.log('PyramidRevealed:', pyramidRevealed);
+            console.log('CurrentRevealedCard:', currentRevealedCard);
+            
+            // Sicherstellen dass currentRevealedCard gesetzt ist
+            if (!currentRevealedCard && pyramidRevealed < pyramidCards.length) {
+                currentRevealedCard = pyramidCards[pyramidRevealed];
+            }
+            
+            // Prüfen ob dieser Spieler passende Karten hat
+            checkForMatchingCards();
+        }
+
+        function displayHandCards() {
+            const handContainer = document.getElementById('hand-cards');
+            handContainer.innerHTML = '';
+            
+            handCards.forEach((card, index) => {
+                if (card) {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = `card ${card.isRed ? 'red' : 'black'}`;
+                    cardDiv.textContent = `${card.value}${card.suit}`;
+                    cardDiv.onclick = () => playHandCard(index);
+                    handContainer.appendChild(cardDiv);
+                }
+            });
+        }
+
+        function revealPyramidCard(cardIndex) {
+            const card = pyramidCards[cardIndex];
+            currentRevealedCard = card;
+            displayCard(`pyramid-${cardIndex}`, card, false);
+        }
+
+        function checkForMatchingCards() {
+            // Sicherstellen dass currentRevealedCard korrekt gesetzt ist
+            if (!currentRevealedCard && pyramidRevealed < pyramidCards.length) {
+                currentRevealedCard = pyramidCards[pyramidRevealed];
+                console.log('currentRevealedCard wurde korrigiert zu:', currentRevealedCard);
+            }
+            
+            if (!currentRevealedCard) {
+                console.log('Keine aufgedeckte Karte gefunden!');
+                nextPlayerOrContinue();
+                return;
+            }
+            
+            // Prüfen ob Spieler passende Karte hat (identische Karte - gleicher Wert UND gleiche Farbe!)
+            const matchingCards = handCards.filter((handCard, index) => 
+                handCard && handCard.value === currentRevealedCard.value && handCard.suit === currentRevealedCard.suit
+            );
+            
+            console.log('Aktuelle Pyramidenkarte:', currentRevealedCard.value + currentRevealedCard.suit);
+            console.log('Spieler Handkarten:', handCards.filter(c => c).map(c => c.value + c.suit));
+            console.log('Passende Karten gefunden:', matchingCards.length);
+            console.log('matchingCards Array:', matchingCards);
+            console.log('Detaillierte Prüfung:');
+            handCards.forEach((card, index) => {
+                if (card) {
+                    const matches = card.value === currentRevealedCard.value && card.suit === currentRevealedCard.suit;
+                    console.log(`  ${card.value}${card.suit} == ${currentRevealedCard.value}${currentRevealedCard.suit}? ${matches}`);
+                }
+            });
+            
+            console.log('Entscheidung: matchingCards.length =', matchingCards.length, 'Type:', typeof matchingCards.length);
+            
+            if (matchingCards.length > 0) {
+                console.log('Rufe showCardPlacement auf');
+                showCardPlacement(matchingCards);
+            } else {
+                console.log('Rufe showNoMatchingCards auf');
+                // Spieler hat keine passenden Karten - kurz anzeigen und dann weiter
+                showNoMatchingCards();
+            }
+        }
+
+        function showCardPlacement(matchingCards) {
+            console.log('showCardPlacement wird ausgeführt mit:', matchingCards);
+            
+            const placementArea = document.getElementById('card-placement-area');
+            const matchingInfo = document.getElementById('matching-info');
+            const noCardsArea = document.getElementById('no-cards-area');
+            
+            // Sicherstellen dass "no-cards" versteckt ist
+            noCardsArea.style.display = 'none';
+            
+            // Passende Karten hervorheben
+            const handContainer = document.getElementById('hand-cards');
+            const cardElements = handContainer.children;
+            
+            for (let i = 0; i < cardElements.length; i++) {
+                const handCard = handCards[i];
+                if (handCard && matchingCards.some(mc => mc.value === handCard.value && mc.suit === handCard.suit)) {
+                    cardElements[i].classList.add('clickable');
+                } else {
+                    cardElements[i].classList.remove('clickable');
+                }
+            }
+            
+            matchingInfo.textContent = matchingCards.map(c => `${c.value}${c.suit}`).join(', ');
+            placementArea.style.display = 'block';
+            
+            console.log('showCardPlacement: placementArea angezeigt, noCardsArea versteckt');
+        }
+
+        function playHandCard(cardIndex) {
+            const handCard = handCards[cardIndex];
+            if (!handCard || !currentRevealedCard) return;
+            
+            // Prüfen ob Karte passt (identische Karte - gleicher Wert UND gleiche Farbe!)
+            if (handCard.value !== currentRevealedCard.value || handCard.suit !== currentRevealedCard.suit) {
+                return;
+            }
+            
+            // Karte auf Pyramide platzieren
+            placeCardOnPyramid(cardIndex, pyramidRevealed);
+            
+            // Karte aus Hand entfernen
+            handCards[cardIndex] = null;
+            const currentPlayer = players[currentPlayerIndex];
+            playersHandCards[currentPlayer][cardIndex] = null;
+            
+            // UI aktualisieren
+            displayHandCards();
+            hideCardPlacement();
+            showDrinkDistribution();
+        }
+
+        function placeCardOnPyramid(handCardIndex, pyramidIndex) {
+            const handCard = handCards[handCardIndex];
+            const pyramidPosition = document.querySelector(`#pyramid-${pyramidIndex}`).parentElement;
+            
+            const placedCardDiv = document.createElement('div');
+            placedCardDiv.className = `card placed-card ${handCard.isRed ? 'red' : 'black'}`;
+            placedCardDiv.textContent = `${handCard.value}${handCard.suit}`;
+            
+            pyramidPosition.appendChild(placedCardDiv);
+            placedCards[pyramidIndex] = handCard;
+        }
+
+        function hideCardPlacement() {
+            document.getElementById('card-placement-area').style.display = 'none';
+            document.getElementById('no-cards-area').style.display = 'none';
+            
+            // Hervorhebung entfernen
+            const handContainer = document.getElementById('hand-cards');
+            const cardElements = handContainer.children;
+            for (let element of cardElements) {
+                element.classList.remove('clickable');
+            }
+        }
+
+        function skipCardPlacement() {
+            hideCardPlacement();
+            nextPlayerOrContinue();
+        }
+
+        function showNoMatchingCards() {
+            console.log('showNoMatchingCards wird ausgeführt - Das sollte NICHT passieren wenn Karten gefunden wurden!');
+            
+            const noCardsArea = document.getElementById('no-cards-area');
+            const revealedCardInfo = document.getElementById('revealed-card-info');
+            const placementArea = document.getElementById('card-placement-area');
+            
+            // Sicherstellen dass "card-placement" versteckt ist
+            placementArea.style.display = 'none';
+            
+            // Debug: Prüfen welche Karte tatsächlich angezeigt werden soll
+            console.log('showNoMatchingCards - currentRevealedCard:', currentRevealedCard);
+            console.log('showNoMatchingCards - pyramidRevealed index:', pyramidRevealed);
+            console.log('showNoMatchingCards - pyramidCards[pyramidRevealed]:', pyramidCards[pyramidRevealed]);
+            
+            // Sicherstellen dass die richtige Karte angezeigt wird
+            const cardToShow = currentRevealedCard || pyramidCards[pyramidRevealed];
+            
+            if (cardToShow) {
+                revealedCardInfo.textContent = `${cardToShow.value}${cardToShow.suit}`;
+            } else {
+                revealedCardInfo.textContent = 'Unbekannt';
+            }
+            
+            noCardsArea.style.display = 'block';
+            
+            console.log('showNoMatchingCards: noCardsArea angezeigt, placementArea versteckt');
+        }
+
+        function continueWithoutCards() {
+            nextPlayerOrContinue();
+        }
+
+        function nextPlayerOrContinue() {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            
+            if (currentPlayerIndex === 0) {
+                // Alle Spieler hatten ihre Chance - nächste Karte aufdecken
+                pyramidRevealed++;
+                
+                if (pyramidRevealed < pyramidCards.length) {
+                    // Nächste Karte automatisch aufdecken
+                    revealPyramidCard(pyramidRevealed);
+                    updatePyramidProgress();
+                    
+                    // Wieder beim ersten Spieler anfangen
+                    currentPlayerIndex = 0;
+                    showPlayerTransition();
+                } else {
+                    // Pyramide fertig
+                    startBusDriverRound();
+                }
+            } else {
+                // Nächster Spieler
+                showPlayerTransition();
+            }
+        }
+
+        function showDrinkDistribution() {
+            const distributionArea = document.getElementById('drink-distribution-area');
+            const distributionDiv = document.getElementById('drink-distribution');
+            
+            const drinksToDistribute = currentPyramidRow; // Reihe 1=1 Schluck, Reihe 2=2, etc.
+            document.getElementById('drinks-to-distribute').textContent = drinksToDistribute;
+            
+            distributionDiv.innerHTML = '';
+            players.forEach(player => {
+                const assignDiv = document.createElement('div');
+                assignDiv.className = 'drink-assign';
+                assignDiv.innerHTML = `
+                    <div>${player}</div>
+                    <input type="number" id="drinks-${player}" min="0" max="${drinksToDistribute}" value="0" onchange="validateDrinkDistribution()">
+                `;
+                distributionDiv.appendChild(assignDiv);
+            });
+            
+            distributionArea.style.display = 'block';
+        }
+
+        function validateDrinkDistribution() {
+            const drinksToDistribute = currentPyramidRow;
+            let totalAssigned = 0;
+            
+            players.forEach(player => {
+                const input = document.getElementById(`drinks-${player}`);
+                totalAssigned += parseInt(input.value) || 0;
+            });
+            
+            // Automatisch korrigieren wenn zu viel verteilt wird
+            if (totalAssigned > drinksToDistribute) {
+                const lastChanged = document.activeElement;
+                if (lastChanged && lastChanged.type === 'number') {
+                    const excess = totalAssigned - drinksToDistribute;
+                    lastChanged.value = Math.max(0, parseInt(lastChanged.value) - excess);
+                }
+            }
+        }
+
+        function distributeDrinks() {
+            // Schlucke an Spieler verteilen
+            const currentPlayer = players[currentPlayerIndex];
+            let totalDistributed = 0;
+            
+            players.forEach(player => {
+                const input = document.getElementById(`drinks-${player}`);
+                const drinks = parseInt(input.value) || 0;
+                
+                if (drinks > 0) {
+                    addDrinksToPlayer(player, drinks, currentPlayer, `Reihe ${currentPyramidRow}`);
+                    totalDistributed += drinks;
+                }
+            });
+            
+            console.log(`${currentPlayer} hat ${totalDistributed} Schlucke verteilt`);
+            
+            hideDrinkDistribution();
+            nextPlayerOrContinue();
+        }
+
+        function skipDistribution() {
+            hideDrinkDistribution();
+            nextPlayerOrContinue();
+        }
+
+        function hideDrinkDistribution() {
+            document.getElementById('drink-distribution-area').style.display = 'none';
+        }
+
+        function updatePyramidProgress() {
+            document.getElementById('pyramid-progress').textContent = pyramidRevealed + 1;
+            
+            // Aktuelle Reihe berechnen (1,2,3,4,5 Karten)
+            let cardsInPreviousRows = 0;
+            let row = 1;
+            for (let r = 1; r <= 5; r++) {
+                if (pyramidRevealed < cardsInPreviousRows + r) {
+                    row = r;
+                    break;
+                }
+                cardsInPreviousRows += r;
+            }
+            
+            currentPyramidRow = row;
+            document.getElementById('current-pyramid-row').textContent = row;
+            document.getElementById('pyramid-row-value').textContent = row;
+            
+            updatePyramidInfo();
+        }
+
+        function updatePyramidInfo() {
+            if (pyramidRevealed >= pyramidCards.length) {
+                setTimeout(() => {
+                    startBusDriverRound();
+                }, 1000);
+            }
+        }
+
+        // Busfahrerrunde
+        function startBusDriverRound() {
+            gamePhase = 'bus';
+            showSection('bus-section');
+            
+            // Busfahrer bestimmen: Spieler mit den wenigsten Handkarten
+            busDriverIndex = determineBusDriver();
+            document.getElementById('bus-driver-name').textContent = players[busDriverIndex];
+            
+            setupBusRound();
+        }
+
+        function determineBusDriver() {
+            let maxCards = -1;
+            let busDriverCandidates = [];
+            
+            // Finde Spieler mit den meisten Karten
+            players.forEach((player, index) => {
+                const playerCards = playersHandCards[player];
+                const cardCount = playerCards ? playerCards.filter(card => card !== null).length : 0;
+                
+                console.log(`${player} hat ${cardCount} Karten übrig`);
+                
+                if (cardCount > maxCards) {
+                    maxCards = cardCount;
+                    busDriverCandidates = [index];
+                } else if (cardCount === maxCards) {
+                    busDriverCandidates.push(index);
+                }
+            });
+            
+            // Bei Gleichstand: Stechen!
+            if (busDriverCandidates.length > 1) {
+                return performTieBreaker(busDriverCandidates, maxCards);
+            }
+            
+            const selectedIndex = busDriverCandidates[0];
+            console.log(`Busfahrer wird: ${players[selectedIndex]} (${maxCards} Karten)`);
+            
+            return selectedIndex;
+        }
+
+        function performTieBreaker(candidates, cardCount) {
+            console.log(`Gleichstand bei ${cardCount} Karten! Stechen zwischen:`, candidates.map(i => players[i]));
+            
+            let highestCard = -1;
+            let winner = candidates[0];
+            let tieCards = [];
+            
+            candidates.forEach(playerIndex => {
+                if (deck.length === 0) {
+                    console.log('Deck leer beim Stechen! Verwende Notfall-Karte.');
+                    // Notfall: zufällige Karte generieren
+                    const suits = ['♠', '♥', '♦', '♣'];
+                    const values = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+                    const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+                    const randomValue = values[Math.floor(Math.random() * values.length)];
+                    const drawnCard = {
+                        suit: randomSuit,
+                        value: randomValue,
+                        numValue: {'7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}[randomValue],
+                        isRed: randomSuit === '♥' || randomSuit === '♦'
+                    };
+                    tieCards.push({player: players[playerIndex], card: drawnCard});
+                } else {
+                    const drawnCard = deck.pop();
+                    tieCards.push({player: players[playerIndex], card: drawnCard});
+                }
+                
+                const currentCard = tieCards[tieCards.length - 1].card;
+                console.log(`${players[playerIndex]} zieht: ${currentCard.value}${currentCard.suit} (Wert: ${currentCard.numValue})`);
+                
+                if (currentCard.numValue > highestCard) {
+                    highestCard = currentCard.numValue;
+                    winner = playerIndex;
+                }
+            });
+            
+            // Stechen-Karten für später aufbewahren (werden beim Busfahren wieder ins Spiel gebracht)
+            window.tieBreakerCards = tieCards.map(entry => entry.card);
+            
+            // Stechen-Ergebnis anzeigen
+            showTieBreakerResult(tieCards, players[winner]);
+            
+            console.log(`Busfahrer nach Stechen: ${players[winner]} (höchste Karte: ${highestCard})`);
+            return winner;
+        }
+
+        function showTieBreakerResult(tieCards, winner) {
+            // Kurze Anzeige des Stechen-Ergebniss
+            let resultText = 'Stechen:\n';
+            tieCards.forEach(entry => {
+                resultText += `${entry.player}: ${entry.card.value}${entry.card.suit}\n`;
+            });
+            resultText += `\nBusfahrer: ${winner}!`;
+            
+            alert(resultText);
+        }
+
+        function setupBusRound() {
+            busCards = [];
+            busPiles = [];
+            currentBusPosition = 0;
+            busDrinks = 0;
+            
+            // Alle nicht verwendeten Karten sammeln für Handstapel
+            collectAllCardsForBusRound();
+            
+            // 5 verdeckte Karten in einer Reihe
+            for (let i = 0; i < 5; i++) {
+                if (handStack.length > 0) {
+                    busCards.push(handStack.pop());
+                } else {
+                    // Sollte nicht passieren, aber Sicherheit
+                    const emergency = {suit: '♠', value: '7', numValue: 7, isRed: false};
+                    busCards.push(emergency);
+                }
+                busPiles.push([]);
+            }
+            
+            // Erste Karte aufdecken
+            const firstCard = busCards[0];
+            busPiles[0].push(firstCard);
+            
+            console.log(`Busfahren startet mit ${handStack.length} Karten im Handstapel`);
+            
+            displayBusRow();
+            updateBusInfo();
+        }
+
+        function collectAllCardsForBusRound() {
+            let allCards = [];
+            
+            // Restliche Karten vom Hauptdeck
+            allCards.push(...deck);
+            
+            // Alle Handkarten der Spieler
+            players.forEach(player => {
+                const playerCards = playersHandCards[player] || [];
+                playerCards.forEach(card => {
+                    if (card !== null) {
+                        allCards.push(card);
+                    }
+                });
+            });
+            
+            // Stechen-Karten hinzufügen falls vorhanden
+            if (window.tieBreakerCards) {
+                allCards.push(...window.tieBreakerCards);
+                console.log(`${window.tieBreakerCards.length} Stechen-Karten hinzugefügt`);
+                window.tieBreakerCards = null; // cleanup
+            }
+            
+            // Karten mischen
+            for (let i = allCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
+            }
+            
+            handStack = allCards;
+            console.log(`Gesammelt: ${allCards.length} Karten für Busfahren`);
+        }
+
+        function displayBusRow() {
+            const busRow = document.getElementById('bus-row');
+            busRow.innerHTML = '';
+            
+            busCards.forEach((card, index) => {
+                const pileDiv = document.createElement('div');
+                pileDiv.className = 'pile';
+                
+                
+                if (index <= currentBusPosition) {
+                    // Aufgedeckte Stapel zeigen
+                    busPiles[index].forEach((pileCard, pileIndex) => {
+                        const cardDiv = document.createElement('div');
+                        cardDiv.className = `card ${pileCard.isRed ? 'red' : 'black'}`;
+                        cardDiv.textContent = `${pileCard.value}${pileCard.suit}`;
+                        
+                        // Aktuelle Position hervorheben
+                        if (index === currentBusPosition && pileIndex === busPiles[index].length - 1) {
+                            cardDiv.style.border = '3px solid #4caf50';
+                            cardDiv.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.8)';
+                        }
+                        
+                        pileDiv.appendChild(cardDiv);
+                    });
+                    
+                    // Anzahl Karten im Stapel anzeigen wenn mehr als 3
+                    if (busPiles[index].length > 3) {
+                        const countDiv = document.createElement('div');
+                        countDiv.style.cssText = 'position: absolute; top: -10px; right: -10px; background: #f44336; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;';
+                        countDiv.textContent = busPiles[index].length;
+                        pileDiv.style.position = 'relative';
+                        pileDiv.appendChild(countDiv);
+                    }
+                } else {
+                    // Verdeckte Karte
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card hidden';
+                    cardDiv.textContent = '?';
+                    pileDiv.appendChild(cardDiv);
+                }
+                
+                busRow.appendChild(pileDiv);
+            });
+        }
+
+        function updateBusInfo() {
+            document.getElementById('bus-position').textContent = currentBusPosition + 1;
+            document.getElementById('bus-drinks').textContent = busDrinks;
+            document.getElementById('hand-stack-count').textContent = handStack.length;
+            
+            const currentTopCard = busPiles[currentBusPosition][busPiles[currentBusPosition].length - 1];
+            document.getElementById('current-bus-card').textContent = 
+                currentTopCard ? `${currentTopCard.value}${currentTopCard.suit}` : '-';
+        }
+
+        function reshuffleHandStack() {
+            console.log('Handstapel ist leer! Neu mischen...');
+            
+            let cardsToShuffle = [];
+            
+            // Von jedem Bus-Stapel alle Karten außer der obersten sammeln
+            busPiles.forEach((pile, pileIndex) => {
+                if (pile.length > 1) {
+                    // Alle außer der obersten Karte nehmen
+                    const cardsToTake = pile.splice(0, pile.length - 1);
+                    cardsToShuffle.push(...cardsToTake);
+                    console.log(`Von Stapel ${pileIndex + 1}: ${cardsToTake.length} Karten genommen`);
+                }
+            });
+            
+            // Karten mischen
+            for (let i = cardsToShuffle.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cardsToShuffle[i], cardsToShuffle[j]] = [cardsToShuffle[j], cardsToShuffle[i]];
+            }
+            
+            // Neuer Handstapel
+            handStack = cardsToShuffle;
+            
+            console.log(`Neuer Handstapel: ${handStack.length} Karten`);
+            
+            // Bus-Anzeige aktualisieren
+            displayBusRow();
+            
+            // Kurze Meldung anzeigen
+            if (handStack.length > 0) {
+                const resultDiv = document.getElementById('bus-result');
+                resultDiv.innerHTML = '<p style="color: #2196f3;">🔄 Handstapel leer! Karten neu gemischt.</p>';
+                resultDiv.style.display = 'block';
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function makeGuess(guess) {
+            if (handStack.length === 0) {
+                reshuffleHandStack();
+                if (handStack.length === 0) {
+                    // Sollte nicht passieren, aber Sicherheit
+                    endGame();
+                    return;
+                }
+            }
+            
+            const drawnCard = handStack.pop();
+            const currentTopCard = busPiles[currentBusPosition][busPiles[currentBusPosition].length - 1];
+            
+            console.log(`Aktuelle Karte: ${currentTopCard.value}${currentTopCard.suit} (Wert: ${currentTopCard.numValue})`);
+            console.log(`Gezogene Karte: ${drawnCard.value}${drawnCard.suit} (Wert: ${drawnCard.numValue})`);
+            console.log(`Tipp: ${guess}`);
+            
+            let correct = false;
+            let explanation = '';
+            
+            if (guess === 'higher') {
+                correct = drawnCard.numValue > currentTopCard.numValue;
+                explanation = `${drawnCard.value}${drawnCard.suit} (${drawnCard.numValue}) ${correct ? 'ist höher als' : 'ist nicht höher als'} ${currentTopCard.value}${currentTopCard.suit} (${currentTopCard.numValue})`;
+            } else if (guess === 'lower') {
+                correct = drawnCard.numValue < currentTopCard.numValue;
+                explanation = `${drawnCard.value}${drawnCard.suit} (${drawnCard.numValue}) ${correct ? 'ist niedriger als' : 'ist nicht niedriger als'} ${currentTopCard.value}${currentTopCard.suit} (${currentTopCard.numValue})`;
+            } else if (guess === 'equal') {
+                correct = drawnCard.numValue === currentTopCard.numValue;
+                explanation = `${drawnCard.value}${drawnCard.suit} (${drawnCard.numValue}) ${correct ? 'ist gleich' : 'ist nicht gleich'} ${currentTopCard.value}${currentTopCard.suit} (${currentTopCard.numValue})`;
+            }
+            
+            console.log(`Ergebnis: ${correct ? 'Richtig' : 'Falsch'} - ${explanation}`);
+            
+            const resultDiv = document.getElementById('bus-result');
+            
+            if (correct) {
+                // Richtig geraten - Karte auf Stapel legen und nächste Position
+                busPiles[currentBusPosition].push(drawnCard);
+                currentBusPosition++;
+                
+                resultDiv.innerHTML = `<p style="color: #4caf50;">Richtig! ${explanation}</p>`;
+                
+                if (currentBusPosition < 5 && handStack.length > 0) {
+                    // Nächste Karte aufdecken
+                    const nextCard = busCards[currentBusPosition];
+                    busPiles[currentBusPosition].push(nextCard);
+                }
+                
+                if (currentBusPosition >= 5) {
+                    setTimeout(() => {
+                        endGame();
+                    }, 2000);
+                }
+            } else {
+                // Falsch geraten - trinken und von vorne anfangen
+                busDrinks++;
+                currentBusPosition = 0;
+                
+                // Neue Karte oben auf ersten Stapel
+                if (handStack.length === 0) {
+                    reshuffleHandStack();
+                }
+                if (handStack.length > 0) {
+                    const newCard = handStack.pop();
+                    busPiles[0].push(newCard);
+                }
+                
+                resultDiv.innerHTML = `<p style="color: #f44336;">Falsch! ${explanation}. Einen Schluck trinken!</p>`;
+            }
+            
+            resultDiv.style.display = 'block';
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 3000);
+            
+            displayBusRow();
+            updateBusInfo();
+        }
+
+        // Hilfsfunktionen
+        function displayCard(elementId, card, hidden = false) {
+            const cardElement = document.getElementById(elementId);
+            if (hidden) {
+                cardElement.className = 'card hidden';
+                cardElement.textContent = '?';
+            } else {
+                cardElement.className = `card ${card.isRed ? 'red' : 'black'}`;
+                cardElement.textContent = `${card.value}${card.suit}`;
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.game-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function endGame() {
+            gamePhase = 'gameover';
+            showSection('game-over-section');
+            document.getElementById('winner-name').textContent = players[busDriverIndex];
+        }
+
+        function confirmEndGame() {
+            const confirmed = confirm(
+                `🚌 Spiel wirklich beenden?\n\n` +
+                `Busfahrer: ${players[busDriverIndex]}\n` +
+                `Aktuelle Position: ${currentBusPosition + 1} von 5\n` +
+                `Schlucke getrunken: ${busDrinks}\n\n` +
+                `Fortschritt geht verloren!`
+            );
+            
+            if (confirmed) {
+                // Spiel beenden und zum Hauptmenü
+                restartGame();
+            }
+        }
+
+        function addDrinksToPlayer(player, amount, fromPlayer, reason) {
+            if (!playerDrinks[player]) {
+                playerDrinks[player] = [];
+            }
+            
+            playerDrinks[player].push({
+                amount: amount,
+                from: fromPlayer,
+                reason: reason,
+                id: Date.now() + Math.random() // Eindeutige ID
+            });
+            
+            console.log(`${player} bekommt ${amount} Schluck(e) von ${fromPlayer} (${reason})`);
+        }
+        
+        function updateDrinkTracker(player, location) {
+            const trackerDiv = document.getElementById(`drink-tracker-${location}`);
+            const summarySpan = document.getElementById(`total-drinks-${location}`);
+            const listDiv = document.getElementById(`drink-list-${location}`);
+            
+            const drinks = playerDrinks[player] || [];
+            const totalDrinks = drinks.reduce((sum, drink) => sum + drink.amount, 0);
+            
+            if (totalDrinks === 0) {
+                trackerDiv.style.display = 'none';
+                return;
+            }
+            
+            trackerDiv.style.display = 'block';
+            summarySpan.textContent = totalDrinks;
+            
+            listDiv.innerHTML = '';
+            drinks.forEach(drink => {
+                const drinkDiv = document.createElement('div');
+                drinkDiv.className = 'drink-item';
+                drinkDiv.innerHTML = `
+                    <span>${drink.amount} Schluck(e) von ${drink.from} (${drink.reason})</span>
+                    <button onclick="removeDrink('${player}', '${drink.id}', '${location}')">Getrunken ✓</button>
+                `;
+                listDiv.appendChild(drinkDiv);
+            });
+        }
+        
+        function removeDrink(player, drinkId, location) {
+            if (!playerDrinks[player]) return;
+            
+            const drinkIndex = playerDrinks[player].findIndex(drink => drink.id == drinkId);
+            if (drinkIndex !== -1) {
+                const removedDrink = playerDrinks[player].splice(drinkIndex, 1)[0];
+                console.log(`${player} hat ${removedDrink.amount} Schluck(e) getrunken`);
+                updateDrinkTracker(player, location);
+            }
+        }
+
+        function restartGame() {
+            players = [];
+            currentPlayerIndex = 0;
+            gamePhase = 'setup';
+            questionRoundEnabled = false;
+            questionCount = 0;
+            questionDrinks = 0;
+            pyramidCards = [];
+            handCards = [];
+            pyramidRevealed = 0;
+            currentPyramidRow = 1;
+            busDriverIndex = 0;
+            busCards = [];
+            busPiles = [];
+            currentBusPosition = 0;
+            handStack = [];
+            busDrinks = 0;
+            playerDrinks = {}; // Schluck-Tracker zurücksetzen
+            
+            showSection('setup-section');
+            updatePlayerList();
+            updateStartButton();
+            
+            // Reset form elements
+            document.getElementById('player-name').value = '';
+            document.getElementById('enable-question-round').checked = false;
+            document.getElementById('enable-test-mode').checked = false;
+            document.getElementById('skip-pyramid').checked = false;
+        }
+
+        // Event Listener für Enter-Taste beim Spielernamen
+        document.getElementById('player-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPlayer();
+            }
+        });
+
+        // Spiel initialisieren
+        createDeck();
+    </script>
+</body>
+</html>
